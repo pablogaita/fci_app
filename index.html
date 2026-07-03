@@ -1,0 +1,4156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>F.C.I.</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0e0f11;--bg2:#141518;--bg3:#1c1e23;--bg4:#242730;--border:#2a2d35;--border2:#353840;--text:#e8eaf0;--text2:#9ca3b0;--text3:#5c6270;--green:#7ecfa0;--green-bg:#1a2d23;--red:#e07070;--red-bg:#2d1a1a;--blue:#7ab8e8;--blue-bg:#1a2535;--yellow:#e8c97a;--yellow-bg:#2d2618;--purple:#b49fe0;--accent:#7ab8e8;--font-head:'Syne',sans-serif;--font-mono:'DM Mono',monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font-mono);font-size:13px}
+#app{display:flex;height:100vh;overflow:hidden}
+#sidebar{width:220px;min-width:220px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto}
+#main{flex:1;overflow-y:auto;background:var(--bg)}
+.sidebar-logo{padding:24px 20px 16px;border-bottom:1px solid var(--border)}
+.sidebar-logo h1{font-family:var(--font-head);font-size:18px;font-weight:800;letter-spacing:-1px}
+.sidebar-logo span{font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase}
+.sidebar-period{padding:12px 20px;font-size:11px;color:var(--text3);border-bottom:1px solid var(--border)}
+.sidebar-period strong{color:var(--yellow)}
+.sidebar-nav{padding:12px 0;flex:1}
+.nav-section{padding:8px 20px 4px;font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;font-family:var(--font-head)}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;cursor:pointer;color:var(--text2);transition:all .15s;font-size:12px;border-left:2px solid transparent}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{background:var(--bg3);color:var(--accent);border-left-color:var(--accent)}
+.sidebar-funds{padding:8px 0;border-top:1px solid var(--border)}
+.fund-nav-item{display:flex;align-items:center;padding:8px 20px;cursor:pointer;color:var(--text2);transition:all .15s;font-size:11px;gap:8px}
+.fund-drag-handle{cursor:grab;color:var(--text3);font-size:10px;padding:0 2px;user-select:none;flex-shrink:0;opacity:0.5}
+.fund-drag-handle:active{cursor:grabbing}
+.fund-nav-item:hover .fund-drag-handle{opacity:1}
+.fund-nav-item.drag-over{border-top:2px solid var(--accent)}
+.fund-nav-item.dragging{opacity:0.4}
+.fund-nav-item:hover{background:var(--bg3);color:var(--text)}
+.fund-nav-item.active{background:var(--bg3);color:var(--accent)}
+.sidebar-footer{padding:16px 20px;border-top:1px solid var(--border)}
+.btn-new-fund{width:100%;padding:8px;background:var(--bg4);border:1px solid var(--border2);border-radius:6px;color:var(--text2);cursor:pointer;font-family:var(--font-mono);font-size:11px;transition:all .15s}
+.btn-new-fund:hover{background:var(--border);color:var(--text)}
+.page{padding:28px 32px;max-width:1400px}
+.page-header{margin-bottom:24px}
+.page-title{font-family:var(--font-head);font-size:26px;font-weight:800;letter-spacing:-1px;color:var(--text)}
+.page-subtitle{font-size:12px;color:var(--text3);margin-top:4px}
+.cards-row{display:grid;gap:14px;margin-bottom:20px}
+.cards-4{grid-template-columns:repeat(4,1fr)}
+.cards-3{grid-template-columns:repeat(3,1fr)}
+.cards-2{grid-template-columns:repeat(2,1fr)}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px 18px}
+.card-label{font-size:10px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;font-family:var(--font-head)}
+.card-value{font-family:var(--font-head);font-size:20px;font-weight:700}
+.card-value.green{color:var(--green)}
+.card-value.red{color:var(--red)}
+.card-value.blue{color:var(--blue)}
+.card-value.yellow{color:var(--yellow)}
+.card-sub{font-size:11px;color:var(--text3);margin-top:3px}
+.table-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:20px}
+.table-head{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--border)}
+.table-title{font-family:var(--font-head);font-size:14px;font-weight:600}
+.table-scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{padding:9px 14px;text-align:left;font-size:10px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;border-bottom:1px solid var(--border);font-weight:600;white-space:nowrap;font-family:var(--font-head)}
+td{padding:10px 14px;font-size:12px;border-bottom:1px solid var(--border);color:var(--text2);white-space:nowrap}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--bg3)}
+.td-main{color:var(--text);font-weight:500}
+.badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:500}
+.badge-green{background:var(--green-bg);color:var(--green)}
+.badge-red{background:var(--red-bg);color:var(--red)}
+.badge-blue{background:var(--blue-bg);color:var(--blue)}
+.badge-yellow{background:var(--yellow-bg);color:var(--yellow)}
+.badge-gray{background:var(--bg4);color:var(--text3)}
+.btn{padding:7px 14px;border-radius:6px;border:none;cursor:pointer;font-family:var(--font-mono);font-size:12px;transition:all .15s}
+.btn-primary{background:var(--accent);color:var(--bg);font-weight:500}
+.btn-primary:hover{opacity:.85}
+.btn-secondary{background:var(--bg4);border:1px solid var(--border2);color:var(--text2)}
+.btn-secondary:hover{background:var(--border);color:var(--text)}
+.btn-danger{background:var(--red-bg);border:1px solid var(--red);color:var(--red)}
+.btn-danger:hover{background:var(--red);color:var(--bg)}
+.btn-sm{padding:5px 10px;font-size:11px}
+.btn-icon{padding:5px 9px;background:var(--bg4);border:1px solid var(--border2);color:var(--text2);border-radius:6px;cursor:pointer;font-size:13px;transition:all .15s}
+.btn-icon:hover{background:var(--border);color:var(--text)}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(4px)}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;padding:26px;width:540px;max-width:95vw;max-height:88vh;overflow-y:auto}
+.modal-title{font-family:var(--font-head);font-size:17px;font-weight:700;margin-bottom:18px}
+.form-row{margin-bottom:13px}
+.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:13px}
+label{display:block;font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px}
+input,select,textarea{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:8px 11px;color:var(--text);font-family:var(--font-mono);font-size:12px;outline:none;transition:border .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+select option{background:var(--bg3)}
+textarea{resize:vertical;min-height:80px}
+.form-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
+.alert{padding:11px 15px;border-radius:8px;margin-bottom:14px;font-size:12px}
+.alert-info{background:var(--blue-bg);border:1px solid var(--blue);color:var(--blue)}
+.alert-warn{background:var(--yellow-bg);border:1px solid var(--yellow);color:var(--yellow)}
+.alert-success{background:var(--green-bg);border:1px solid var(--green);color:var(--green)}
+.empty-state{text-align:center;padding:40px 24px;color:var(--text3)}
+.empty-state .icon{font-size:32px;margin-bottom:10px}
+.flex-between{display:flex;align-items:center;justify-content:space-between}
+.flex-gap{display:flex;align-items:center;gap:8px}
+.text-green{color:var(--green)}.text-red{color:var(--red)}.text-blue{color:var(--blue)}.text-yellow{color:var(--yellow)}.text-muted{color:var(--text3)}
+.hidden{display:none}
+.td-num{text-align:right;font-variant-numeric:tabular-nums;font-feature-settings:"tnum";white-space:nowrap;font-family:var(--font-mono,'Courier New',monospace)}
+.cartera-total-row td{background:var(--bg3);font-weight:700;border-top:2px solid var(--border2)}
+.fondos-table th,.fondos-table td{padding:6px 4px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fondos-table th{text-align:center}
+.cierre-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+.cierre-tab{padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--font-head);transition:all .15s}
+.cierre-tab:hover{background:var(--bg3);color:var(--text)}
+.cierre-tab.active{background:var(--accent);border-color:var(--accent);color:#000;font-weight:700}
+.cierre-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:14px}
+.cierre-cards-principales{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px}
+.cierre-card-principal{background:var(--bg2);border:2px solid var(--border2);border-radius:10px;padding:16px 18px}
+.cierre-card-principal.positive{border-color:var(--green)}
+.cierre-card-principal.negative{border-color:var(--red)}
+.cierre-card-principal .label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;font-weight:500}
+.cierre-card-principal .value{font-size:22px;font-weight:700;font-family:var(--font-head);line-height:1.1}
+.cierre-card-principal .subvalue{font-size:11px;color:var(--text3);margin-top:5px}
+.cierre-cards-periodo{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:12px}
+.cierre-card-mini{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px}
+.cierre-card-mini .label{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.cierre-card-mini .value{font-size:13px;font-weight:600;font-family:var(--font-mono)}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--border2)}
+
+/* LOGIN */
+#login-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999}
+#login-box{background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:40px;width:320px}
+#login-box h1{font-family:var(--font-head);font-size:22px;font-weight:800;margin-bottom:4px}
+#login-box p{color:var(--text3);font-size:11px;margin-bottom:24px}
+#login-box input{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:10px 12px;color:var(--text);font-size:13px;font-family:var(--font-mono);margin-bottom:12px;outline:none}
+#login-box input:focus{border-color:var(--accent)}
+#login-box button{width:100%;background:var(--accent);color:#0e0f11;border:none;border-radius:6px;padding:10px;font-weight:700;font-size:13px;cursor:pointer;font-family:var(--font-head)}
+#login-error{color:var(--red);font-size:11px;margin-top:8px;text-align:center;min-height:16px}
+.sync-badge{font-size:9px;padding:2px 6px;border-radius:3px;margin-left:6px}
+.sync-ok{background:var(--green-bg);color:var(--green)}
+.sync-err{background:var(--red-bg);color:var(--red)}
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <div id="login-box">
+    <h1>F.C.I.</h1>
+    <p>Ingresá con tus credenciales</p>
+    <input type="text" id="l-user" placeholder="Usuario" autocomplete="username">
+    <input type="password" id="l-pass" placeholder="Contraseña" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    <button onclick="doLogin()">Ingresar</button>
+    <div id="login-error"></div>
+  </div>
+</div>
+
+<div id="app">
+  <div id="sidebar">
+    <div class="sidebar-logo"><h1>F.C.I.</h1><span>Beta v2.0</span></div>
+    <div class="sidebar-period" id="sidebar-period"></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Principal</div>
+      <div class="nav-item active" data-page="dashboard" onclick="navigate('dashboard')"><span>◈</span> Dashboard</div>
+      <div class="nav-item" data-page="movimientos" onclick="navigate('movimientos')"><span>⇄</span> Movimientos</div>
+      <div class="nav-item" data-page="precios-spot" onclick="navigate('precios-spot')"><span>◎</span> Precios Spot</div>
+      <div class="nav-item" data-page="cierres" onclick="navigate('cierres')"><span>◷</span> Cierres</div>
+      <div class="nav-item" data-page="anual" onclick="navigate('anual')"><span>◉</span> Anual</div>
+      <div class="nav-item" data-page="notas" onclick="navigate('notas')"><span>✎</span> Notas</div>
+      <div class="nav-section" style="margin-top:8px">Fondos</div>
+    </nav>
+    <div class="sidebar-funds" id="sidebar-funds"></div>
+    <div class="sidebar-footer">
+      <button class="btn-new-fund" onclick="prepareNewFondo()">+ Nuevo fondo</button>
+      <button class="btn-new-fund" style="margin-top:6px;color:var(--blue)" onclick="openTransferencia()">⇄ Transferencia interna</button>
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <button class="btn btn-secondary btn-sm" style="flex:1" onclick="exportData()">Exportar</button>
+        <button class="btn btn-secondary btn-sm" style="flex:1" onclick="document.getElementById('import-file').click()">Importar</button>
+      </div>
+      <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+    </div>
+  </div>
+  <div id="main">
+    <div id="page-dashboard" class="page"></div>
+    <div id="page-movimientos" class="page hidden"></div>
+    <div id="page-precios-spot" class="page hidden"></div>
+    <div id="page-cierres" class="page hidden"></div>
+    <div id="page-anual" class="page hidden"></div>
+    <div id="page-notas" class="page hidden"></div>
+    <div id="page-fondo" class="page hidden"></div>
+  </div>
+</div>
+
+<!-- MODAL FONDO -->
+<div id="modal-fondo" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-title" id="modal-fondo-title">Nuevo Fondo</div>
+    <div class="form-row">
+      <label>Nombre del fondo <span style="color:var(--text3);font-size:10px">(libre — el ID interno es único e inmutable)</span></label>
+      <input type="text" id="fondo-nombre-input" placeholder="Ej: PETRÓLEO, BANCOS, Fondo.01.04..." autocomplete="off">
+      <div style="font-size:10px;color:var(--text3);margin-top:4px" id="fondo-nombre-hint">Sugerencia: <span id="fondo-nombre-sugerencia" style="color:var(--accent);cursor:pointer" onclick="document.getElementById('fondo-nombre-input').value=this.textContent">—</span> (click para usar)</div>
+    </div>
+    <div class="form-row"><label>Descripción (opcional)</label><input type="text" id="fondo-desc" placeholder="Ej: PPI, Cocos, Balanz..."></div>
+    <div class="form-row" id="fondo-mep-row" style="display:none">
+      <label>MEP inicio manual <span style="color:var(--text3);font-size:10px">(opcional)</span></label>
+      <input type="text" id="fondo-mep-inicio" inputmode="decimal" placeholder="Ej: 1.422,00" onblur="reformatInput(this,2)" style="width:160px">
+    </div>
+    <div class="form-row"><label>Color</label>
+      <select id="fondo-color">
+        <option value="0">Azul</option><option value="1">Verde</option><option value="2">Amarillo</option>
+        <option value="3">Violeta</option><option value="4">Rojo</option><option value="5">Celeste</option>
+      </select>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modal-fondo')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveFondo()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL TRANSFERENCIA INTERNA -->
+<div id="modal-transferencia" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-title">Transferencia interna entre fondos</div>
+    <div class="alert alert-info" style="margin-bottom:14px;font-size:11px">Mueve una posición de un fondo a otro <strong>a costo histórico</strong>, sin impacto en liquidez ni en el consolidado total.</div>
+    <div class="form-row-2">
+      <div class="form-row"><label>Fondo origen</label><select id="tr-origen" onchange="onTransfOrigenChange()"></select></div>
+      <div class="form-row"><label>Fondo destino</label><select id="tr-destino"></select></div>
+    </div>
+    <div class="form-row"><label>Activo</label><select id="tr-activo" onchange="onTransfActivoChange()"></select></div>
+    <div class="form-row-3">
+      <div class="form-row"><label>Cantidad disponible</label><div id="tr-cant-disp" style="padding:8px 11px;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;font-size:12px;color:var(--text3)">—</div></div>
+      <div class="form-row"><label>Cantidad a transferir</label><input type="text" id="tr-cantidad" inputmode="decimal" placeholder="0,00" onblur="reformatInput(this);onTransfCantChange()" oninput="onTransfCantChange()"></div>
+      <div class="form-row"><label>Costo $</label><div id="tr-costo" style="padding:8px 11px;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;font-size:12px;color:var(--yellow)">—</div><div id="tr-ppc-hint" style="font-size:10px;color:var(--text3);margin-top:3px"></div></div>
+    </div>
+    <div class="form-row-2">
+      <div class="form-row"><label>Fecha</label><input type="date" id="tr-fecha"></div>
+      <div class="form-row"><label>USD MEP referencia</label><input type="text" id="tr-mep" inputmode="decimal" onblur="reformatInput(this)"></div>
+    </div>
+    <div class="form-row"><label>Nota (opcional)</label><input type="text" id="tr-nota" placeholder="Motivo de la transferencia"></div>
+    <div id="tr-preview" style="font-size:11px;color:var(--text3);margin-top:4px"></div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modal-transferencia')">Cancelar</button>
+      <button class="btn btn-primary" onclick="ejecutarTransferencia()">Transferir</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- MODAL MOVIMIENTO -->
+<div id="modal-mov" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-title" id="modal-mov-title">Nuevo Movimiento</div>
+    <div class="form-row-2">
+      <div class="form-row"><label>Fecha</label><input type="date" id="mov-fecha"></div>
+      <div class="form-row"><label>Fondo</label><select id="mov-fondo" onchange="actualizarHintAporteImplicito()"></select></div>
+    </div>
+    <div class="form-row-2">
+      <div class="form-row"><label>Tipo de instrumento</label>
+        <select id="mov-instrumento" onchange="updateOperaciones();calcImporteAuto()">
+          <option value="liquidez">Liquidez</option><option value="renta_fija">Renta Fija</option>
+          <option value="accion">Acción</option>
+          <option value="cedear">CEDEAR</option><option value="fci">FCI</option>
+          <option value="futuro">Futuro</option><option value="opcion">Opción</option><option value="otro">Otro</option>
+        </select>
+      </div>
+      <div class="form-row"><label>Operación</label><select id="mov-operacion" onchange="calcImporteAuto()"></select></div>
+    </div>
+    <div class="form-row"><label>Activo / Ticker</label><input type="text" id="mov-activo" placeholder="Ej: AL30, GGAL, S17A6..."></div>
+    <div class="form-row-3">
+      <div class="form-row">
+        <label id="lbl-cantidad">Cantidad</label>
+        <input type="text" id="mov-cantidad" onblur="reformatInput(this)" placeholder="0,00" oninput="calcImporteAuto()" inputmode="decimal">
+        <div id="helper-cantidad" style="display:none;font-size:10px;color:var(--text3);margin-top:3px">Valor nominal (VN)</div>
+      </div>
+      <div class="form-row">
+        <label id="lbl-precio">Precio unitario $</label>
+        <input type="text" id="mov-precio" onblur="reformatInput(this)" placeholder="0,00" oninput="calcImporteAuto()" inputmode="decimal" title="">
+        <div id="helper-precio" style="display:none;font-size:10px;color:var(--text3);margin-top:3px">Cotiza por cada 100 de valor nominal</div>
+      </div>
+      <div class="form-row">
+        <label>Monto operado $</label>
+        <input type="text" id="mov-importe" onblur="reformatInput(this);actualizarHintAporteImplicito()" placeholder="0,00" inputmode="decimal">
+        <div id="helper-importe" style="display:none;font-size:10px;color:var(--text3);margin-top:3px">Calculado como Cantidad × Precio / 100</div>
+      </div>
+    </div>
+    <div class="form-row-2">
+      <div class="form-row"><label>USD MEP referencia</label><input type="text" id="mov-usd-mep" onblur="reformatInput(this)" placeholder="1.399,00" inputmode="decimal"></div>
+      <div class="form-row"><label>Comisión $</label><input type="text" id="mov-comision" onblur="reformatInput(this)" placeholder="0,00" inputmode="decimal"></div>
+    </div>
+    <div class="form-row-2">
+      <div class="form-row"><label>Impuestos $</label><input type="text" id="mov-impuestos" onblur="reformatInput(this)" placeholder="0,00" inputmode="decimal"></div>
+      <div class="form-row"><label>Observaciones</label><input type="text" id="mov-obs" placeholder="Opcional"></div>
+    </div>
+    <div id="mov-aporte-row" class="form-row" style="display:flex;align-items:center;gap:10px;background:var(--bg4);padding:10px 12px;border-radius:6px;border:1px solid var(--border2)">
+      <input type="checkbox" id="mov-aporte-capital" style="width:auto;accent-color:var(--accent)">
+      <label style="margin:0;text-transform:none;letter-spacing:0;font-size:12px;color:var(--text2);cursor:pointer" for="mov-aporte-capital">Es <strong style="color:var(--accent)">aporte de capital</strong></label>
+    </div>
+    <div id="mov-aporte-implicito-hint" style="display:none;padding:9px 13px;border-radius:6px;background:var(--blue-bg);border:1px solid var(--blue);color:var(--blue);font-size:11px;margin-top:-4px">
+      💡 Esta compra supera la liquidez disponible. Se registrará un <strong>aporte implícito</strong> de <span id="mov-hint-monto"></span> al guardar.
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modal-mov')">Cancelar</button>
+      <button class="btn btn-primary" id="mov-save-btn" onclick="saveMov()">Guardar movimiento</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CIERRE -->
+<div id="modal-cierre" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-title">Cierre mensual</div>
+    <div class="alert alert-warn">Cerrará el período actual y generará el saldo inicial para el próximo mes.</div>
+    <div id="cierre-preview"></div>
+    <div class="form-row" style="margin-top:14px"><label>USD MEP de cierre</label><input type="text" id="cierre-usd-mep" placeholder="1.399,00" inputmode="decimal" onblur="reformatInput(this)"></div>
+    <div class="form-row"><label>Inflación del mes % <span style="color:var(--text3);font-size:10px">(opcional)</span></label><input type="text" id="cierre-inflacion" placeholder="3,20" inputmode="decimal" onblur="reformatInput(this)"></div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modal-cierre')">Cancelar</button>
+      <button class="btn btn-primary" onclick="ejecutarCierre()">Ejecutar cierre</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PRECIOS CIERRE -->
+<div id="modal-precios-cierre" class="modal-overlay hidden">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-title">Precios de cierre</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Base para P.Prom $ mensual del mes siguiente.</div>
+    <div class="form-row"><label>Período</label><select id="pc-periodo" onchange="renderPreciosCierreEditor()"></select></div>
+    <div id="pc-editor" style="margin-top:12px"></div>
+    <div class="form-row" style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px">
+      <label>Agregar activo</label>
+      <div style="display:flex;gap:8px">
+        <input type="text" id="pc-activo" placeholder="GGAL" style="flex:1" onchange="this.value=this.value.toUpperCase()">
+        <input type="text" id="pc-precio" placeholder="6.890,00" inputmode="decimal" onblur="reformatInput(this)" style="width:110px">
+        <button class="btn btn-primary btn-sm" onclick="agregarPrecioCierre()">+</button>
+      </div>
+    </div>
+    <div class="form-actions"><button class="btn btn-secondary" onclick="closeModal('modal-precios-cierre')">Cerrar</button></div>
+  </div>
+</div>
+
+<!-- MODAL INFLACIÓN -->
+<div id="modal-inflacion" class="modal-overlay hidden">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-title">Inflación mensual</div>
+    <div id="inflacion-tabla"></div>
+    <div class="form-row" style="margin-top:16px;border-top:1px solid var(--border);padding-top:14px">
+      <label>Agregar / editar período</label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="month" id="inf-mes" style="flex:1">
+        <input type="text" id="inf-valor" placeholder="3,20" inputmode="decimal" onblur="reformatInput(this)" style="width:90px;text-align:right">
+        <span style="color:var(--text3);font-size:13px">%</span>
+        <button class="btn btn-primary btn-sm" onclick="guardarInflacion()">Guardar</button>
+      </div>
+    </div>
+    <div class="form-actions"><button class="btn btn-secondary" onclick="closeModal('modal-inflacion')">Cerrar</button></div>
+  </div>
+</div>
+
+<div id="modal-capital-base" class="modal-overlay hidden">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-title">Editar Capital Base</div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:14px">Override manual del Capital Base para el período actual. Tiene prioridad sobre el cierre anterior.</div>
+    <div class="form-row">
+      <label>Capital Base $</label>
+      <input type="text" id="cb-ars" inputmode="decimal" onblur="reformatInput(this)" placeholder="0,00"
+        oninput="cbSyncFromARS()">
+    </div>
+    <div class="form-row">
+      <label>Dólar Base</label>
+      <input type="text" id="cb-dolar" inputmode="decimal" onblur="reformatInput(this)" placeholder="1.413,00"
+        oninput="cbSyncFromDolar()">
+    </div>
+    <div class="form-row">
+      <label>Capital Base U$S</label>
+      <input type="text" id="cb-usd" inputmode="decimal" onblur="reformatInput(this)" placeholder="0,00"
+        oninput="cbSyncFromUSD()">
+    </div>
+    <div id="cb-fondo-id" style="display:none"></div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modal-capital-base')">Cancelar</button>
+      <button class="btn btn-danger btn-sm" onclick="borrarCapitalBase()" style="margin-right:auto">Quitar override</button>
+      <button class="btn btn-primary" onclick="guardarCapitalBase()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+// ============================================================
+// DB — localStorage persistence
+// ============================================================
+
+const PRELOADED_DATA = {
+  "periodo": {
+    "mes": 4,
+    "anio": 2026
+  },
+  "fondos": [
+    {
+      "id": "mn82etmy9ze2xj6k3dl",
+      "nombre": "PPI (Por ahora)",
+      "descripcion": "Fondo PPI",
+      "color": "0",
+      "orden": 3,
+      "mep_inicio_manual": null,
+      "activo": false
+    },
+    {
+      "id": "mn82x68ytjuwzu7ci6",
+      "nombre": "Fondo.02.03",
+      "descripcion": "Viene de ON",
+      "color": "1",
+      "activo": false
+    },
+    {
+      "id": "mn860n9w9ball66gma",
+      "nombre": "Bancos",
+      "descripcion": "RENTA VARIABLE",
+      "color": "4",
+      "orden": 0,
+      "mep_inicio_manual": null,
+    },
+    {
+      "id": "mn86bzothsctsscgse",
+      "nombre": "OIL & GAS",
+      "descripcion": "RENTA VARIABLE",
+      "color": "4",
+      "orden": 2,
+      "mep_inicio_manual": null
+    },
+    {
+      "id": "mndacgx2eh7tkye4jk",
+      "nombre": "Renta Fija",
+      "descripcion": "DOLAR LINK",
+      "color": "1",
+      "orden": 4,
+      "mep_inicio_manual": null,
+    },
+    {
+      "id": "mnggc8b5ownfqg3cwqp",
+      "nombre": "Superville",
+      "descripcion": "RENTA VARIABLE",
+      "color": "3",
+      "mep_inicio_manual": null,
+      "orden": 0,
+      "activo": false
+    },
+    {
+      "id": "mnj96pdq06ywc4pvv15c",
+      "nombre": "Bancos HAPI",
+      "descripcion": "EEUU",
+      "color": "4",
+      "orden": 1,
+      "mep_inicio_manual": null
+    },
+    {
+      "id": "mnnnsvx0o0dg77999c7",
+      "nombre": "Futturos",
+      "descripcion": "COBERTURA",
+      "color": "3",
+      "orden": 5,
+      "mep_inicio_manual": null
+    },
+    {
+      "id": "mo0jttk9hb4s4t79z2l",
+      "nombre": "ENERGIA y SERVICIOS",
+      "descripcion": "Empresas Argentinas",
+      "color": "4",
+      "orden": 3,
+      "mep_inicio_manual": null
+    }
+  ],
+  "movimientos": [
+    {
+      "id": "mn82iqdnq6kb1y4j4qb",
+      "fondo_id": "mndacgx2eh7tkye4jk",
+      "fecha": "2026-03-26",
+      "periodo_mes": 3,
+      "periodo_anio": 2026,
+      "instrumento": "renta_fija",
+      "tipo": "compra",
+      "activo": "S17A6",
+      "cantidad": 295611,
+      "precio_ars": 108.61,
+      "importe_ars": 321063.11,
+      "usd_mep": 1399,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": true,
+      "origen": "manual"
+    },
+    {
+      "id": "mn82jskwmexqfjrrnl",
+      "fondo_id": "mndacgx2eh7tkye4jk",
+      "fecha": "2026-03-26",
+      "periodo_mes": 3,
+      "periodo_anio": 2026,
+      "instrumento": "accion",
+      "tipo": "compra",
+      "activo": "GGAL",
+      "cantidad": 1200,
+      "precio_ars": 6435,
+      "importe_ars": 7722000,
+      "usd_mep": 1399,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": true,
+      "origen": "manual"
+    },
+    {
+      "id": "mn832uyqmb3q2zikvh",
+      "fondo_id": "mn86bzothsctsscgse",
+      "fecha": "2026-03-26",
+      "periodo_mes": 3,
+      "periodo_anio": 2026,
+      "instrumento": "accion",
+      "tipo": "compra",
+      "activo": "GGAL",
+      "cantidad": 500,
+      "precio_ars": 6435,
+      "importe_ars": 3217500,
+      "usd_mep": 1399,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": true,
+      "origen": "manual"
+    },
+    {
+      "id": "mn836zm3qevc0el47i",
+      "fondo_id": "mn86bzothsctsscgse",
+      "fecha": "2026-03-26",
+      "periodo_mes": 3,
+      "periodo_anio": 2026,
+      "instrumento": "renta_fija",
+      "tipo": "compra",
+      "activo": "S17A6",
+      "cantidad": 5720706,
+      "precio_ars": 108.61,
+      "importe_ars": 6213258.79,
+      "usd_mep": 1399,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": true,
+      "origen": "manual"
+    },
+    {
+      "id": "mn838n7c2gy1hf6bfgd",
+      "fondo_id": "mn86bzothsctsscgse",
+      "fecha": "2026-03-26",
+      "periodo_mes": 3,
+      "periodo_anio": 2026,
+      "instrumento": "futuro",
+      "tipo": "futuro_venta",
+      "activo": "YPFD/ABR26",
+      "cantidad": 2,
+      "precio_ars": 64700,
+      "importe_ars": 129400,
+      "usd_mep": 1399,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": false,
+      "origen": "manual"
+    },
+    {
+      "id": "mn841qz4q20myzcbuw",
+      "fondo_id": "mn86bzothsctsscgse",
+      "fecha": "2026-03-26",
+      "periodo_mes": 3,
+      "periodo_anio": 2026,
+      "instrumento": "futuro",
+      "tipo": "futuro_venta",
+      "activo": "PAMP/ABR26",
+      "cantidad": 4,
+      "precio_ars": 5074,
+      "importe_ars": 20296,
+      "usd_mep": 1399,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": false,
+      "origen": "manual"
+    },
+    {
+      "id": "mn842dvb8reurlozs6e",
+      "fondo_id": "mn86bzothsctsscgse",
+      "fecha": "2026-03-26",
+      "periodo_mes": 3,
+      "periodo_anio": 2026,
+      "instrumento": "futuro",
+      "tipo": "futuro_venta",
+      "activo": "GGAL/ABR26",
+      "cantidad": 4,
+      "precio_ars": 6590,
+      "importe_ars": 26360,
+      "usd_mep": 1399,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": false,
+      "origen": "manual"
+    },
+    {
+      "id": "mn865x79gtv98519yd6",
+      "fondo_id": "mn860n9w9ball66gma",
+      "fecha": "2026-03-26",
+      "periodo_mes": 3,
+      "periodo_anio": 2026,
+      "instrumento": "accion",
+      "tipo": "compra",
+      "activo": "GGAL",
+      "cantidad": 8000,
+      "precio_ars": 6435,
+      "importe_ars": 51480000,
+      "usd_mep": 1399,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": true,
+      "origen": "manual"
+    },
+    {
+      "id": "mn8669ahv1dy5fjb62",
+      "fondo_id": "mn860n9w9ball66gma",
+      "fecha": "2026-03-26",
+      "periodo_mes": 3,
+      "periodo_anio": 2026,
+      "instrumento": "accion",
+      "tipo": "compra",
+      "activo": "COME",
+      "cantidad": 6000,
+      "precio_ars": 45,
+      "importe_ars": 270000,
+      "usd_mep": 1399,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": true,
+      "origen": "manual"
+    },
+    {
+      "id": "mn8691057rdrkn8iyj",
+      "fondo_id": "mn860n9w9ball66gma",
+      "fecha": "2026-03-26",
+      "periodo_mes": 3,
+      "periodo_anio": 2026,
+      "instrumento": "accion",
+      "tipo": "compra",
+      "activo": "YPFD",
+      "cantidad": 151,
+      "precio_ars": 63100,
+      "importe_ars": 9528100,
+      "usd_mep": 1399,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": true,
+      "origen": "manual"
+    },
+    {
+      "id": "mn86fnt2rm92my5bqz",
+      "fondo_id": "mn86bzothsctsscgse",
+      "fecha": "2026-03-26",
+      "periodo_mes": 3,
+      "periodo_anio": 2026,
+      "instrumento": "renta_fija",
+      "tipo": "compra",
+      "activo": "S29Y6",
+      "cantidad": 17959205,
+      "precio_ars": 126.64,
+      "importe_ars": 22743537.21,
+      "usd_mep": 1399,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": true,
+      "origen": "manual"
+    },
+    {
+      "id": "mn86lt78jgq5oqjs5",
+      "fondo_id": "mn86bzothsctsscgse",
+      "fecha": "2026-03-26",
+      "periodo_mes": 3,
+      "periodo_anio": 2026,
+      "instrumento": "accion",
+      "tipo": "compra",
+      "activo": "PAMP",
+      "cantidad": 500,
+      "precio_ars": 4895,
+      "importe_ars": 2447500,
+      "usd_mep": 1399,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": true,
+      "origen": "manual"
+    },
+    {
+      "id": "mn88sshoqdeaaa3bzc",
+      "fondo_id": "mn860n9w9ball66gma",
+      "fecha": "2026-03-26",
+      "periodo_mes": 3,
+      "periodo_anio": 2026,
+      "instrumento": "renta_fija",
+      "tipo": "compra",
+      "activo": "S17A6",
+      "cantidad": 121.2,
+      "precio_ars": 108.61,
+      "importe_ars": 131.64,
+      "usd_mep": 1399,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": true,
+      "origen": "manual"
+    },
+    {
+      "id": "mn89fyw37m1vqdu8j4e",
+      "fondo_id": "mndacgx2eh7tkye4jk",
+      "fecha": "2026-03-26",
+      "periodo_mes": 3,
+      "periodo_anio": 2026,
+      "instrumento": "renta_fija",
+      "tipo": "compra",
+      "activo": "GD35",
+      "cantidad": 68000,
+      "precio_ars": 107000,
+      "importe_ars": 72760000,
+      "usd_mep": 1399,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": true,
+      "origen": "manual"
+    },
+    {
+      "id": "mnagba7em47785fltja",
+      "fondo_id": "mn86bzothsctsscgse",
+      "fecha": "2026-03-28",
+      "periodo_mes": 3,
+      "periodo_anio": 2026,
+      "instrumento": "futuro",
+      "tipo": "futuro_compra",
+      "activo": "YPFD/ABR26",
+      "cantidad": 2,
+      "precio_ars": 69150,
+      "importe_ars": 138300,
+      "usd_mep": 1428.43,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": false,
+      "origen": "manual"
+    },
+    {
+      "id": "mnagdlqpzgcczjd17h9",
+      "fondo_id": "mn86bzothsctsscgse",
+      "fecha": "2026-03-28",
+      "periodo_mes": 3,
+      "periodo_anio": 2026,
+      "instrumento": "futuro",
+      "tipo": "futuro_compra",
+      "activo": "GGAL/ABR26",
+      "cantidad": 2,
+      "precio_ars": 6708,
+      "importe_ars": 13416,
+      "usd_mep": 1428.43,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": false,
+      "origen": "manual"
+    },
+    {
+      "id": "mnagq5xrpyfns8mejcl",
+      "fondo_id": "mn86bzothsctsscgse",
+      "fecha": "2026-03-28",
+      "periodo_mes": 3,
+      "periodo_anio": 2026,
+      "instrumento": "futuro",
+      "tipo": "futuro_compra",
+      "activo": "PAMP/ABR26",
+      "cantidad": 2,
+      "precio_ars": 5079,
+      "importe_ars": 10158,
+      "usd_mep": 1428.43,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": false,
+      "origen": "manual"
+    },
+    {
+      "id": "mndaecvrhmiixgdshv",
+      "fondo_id": "mndacgx2eh7tkye4jk",
+      "fecha": "2026-03-30",
+      "periodo_mes": 3,
+      "periodo_anio": 2026,
+      "instrumento": "renta_fija",
+      "tipo": "compra",
+      "activo": "VSCVO",
+      "cantidad": 10000,
+      "precio_ars": 158920,
+      "importe_ars": 15892000,
+      "usd_mep": 1428.43,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": true,
+      "origen": "manual"
+    },
+    {
+      "id": "mndaklgms5z4f5fra6j",
+      "fondo_id": "mndacgx2eh7tkye4jk",
+      "fecha": "2026-03-30",
+      "periodo_mes": 3,
+      "periodo_anio": 2026,
+      "instrumento": "renta_fija",
+      "tipo": "compra",
+      "activo": "TSC3O",
+      "cantidad": 10000,
+      "precio_ars": 156900,
+      "importe_ars": 15690000,
+      "usd_mep": 1428.43,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": true,
+      "origen": "manual"
+    },
+    {
+      "id": "mndalislp8s4mfew5om",
+      "fondo_id": "mndacgx2eh7tkye4jk",
+      "fecha": "2026-03-30",
+      "periodo_mes": 3,
+      "periodo_anio": 2026,
+      "instrumento": "renta_fija",
+      "tipo": "compra",
+      "activo": "TLCMO",
+      "cantidad": 5000,
+      "precio_ars": 159090,
+      "importe_ars": 7954500,
+      "usd_mep": 1428.43,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": true,
+      "origen": "manual"
+    },
+    {
+      "id": "mndamaiq3ijp43cmmkf",
+      "fondo_id": "mndacgx2eh7tkye4jk",
+      "fecha": "2026-03-30",
+      "periodo_mes": 3,
+      "periodo_anio": 2026,
+      "instrumento": "renta_fija",
+      "tipo": "compra",
+      "activo": "DNC3O",
+      "cantidad": 10000,
+      "precio_ars": 151000,
+      "importe_ars": 15100000,
+      "usd_mep": 1428.43,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": true,
+      "origen": "manual"
+    },
+    {
+      "id": "mndan6wmugtfzig977",
+      "fondo_id": "mndacgx2eh7tkye4jk",
+      "fecha": "2026-03-30",
+      "periodo_mes": 3,
+      "periodo_anio": 2026,
+      "instrumento": "renta_fija",
+      "tipo": "compra",
+      "activo": "ZZC1O",
+      "cantidad": 26610,
+      "precio_ars": 147000,
+      "importe_ars": 39116700,
+      "usd_mep": 1428.43,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": true,
+      "origen": "manual"
+    },
+    {
+      "id": "mnetw6ra3ljvg3l94yg",
+      "fondo_id": "mn860n9w9ball66gma",
+      "fecha": "2026-03-30",
+      "periodo_mes": 3,
+      "periodo_anio": 2026,
+      "instrumento": "renta_fija",
+      "tipo": "venta",
+      "activo": "S17A6",
+      "cantidad": 172235,
+      "precio_ars": 108.06,
+      "importe_ars": 186117.14,
+      "usd_mep": 1434,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": false,
+      "origen": "manual"
+    },
+    {
+      "id": "mneu4sey6zao4andkts",
+      "fondo_id": "mn860n9w9ball66gma",
+      "fecha": "2026-03-31",
+      "periodo_mes": 3,
+      "periodo_anio": 2026,
+      "instrumento": "liquidez",
+      "tipo": "retiro",
+      "activo": "",
+      "cantidad": null,
+      "precio_ars": null,
+      "importe_ars": 186117.14,
+      "usd_mep": 1426,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": false,
+      "origen": "manual"
+    },
+    {
+      "id": "mnf29p5guwqz2rjywnq",
+      "fondo_id": "mn86bzothsctsscgse",
+      "fecha": "2026-03-31",
+      "periodo_mes": 3,
+      "periodo_anio": 2026,
+      "instrumento": "renta_fija",
+      "tipo": "compra",
+      "activo": "S17A6",
+      "cantidad": 20197500,
+      "precio_ars": 108.951,
+      "importe_ars": 22005378.23,
+      "usd_mep": 1420,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": true,
+      "origen": "manual"
+    },
+    {
+      "id": "mnggf8f7lp0kv37tot",
+      "fondo_id": "mn860n9w9ball66gma",
+      "fecha": "2026-04-01",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "instrumento": "accion",
+      "tipo": "compra",
+      "activo": "SUPV",
+      "cantidad": 44709,
+      "precio_ars": 2800,
+      "importe_ars": 125185200,
+      "usd_mep": 1422.12,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": true,
+      "origen": "manual"
+    },
+    {
+      "id": "mnhxgbsykp29l4tcg1d",
+      "fondo_id": "mn860n9w9ball66gma",
+      "fecha": "2026-04-01",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "instrumento": "renta_fija",
+      "tipo": "compra",
+      "activo": "S17A6",
+      "cantidad": 18538150,
+      "precio_ars": 108.951,
+      "importe_ars": 20197499.81,
+      "usd_mep": 1422,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": true,
+      "origen": "manual"
+    },
+    {
+      "id": "mnj9dg3cg1poel9fm1p",
+      "fondo_id": "mnj96pdq06ywc4pvv15c",
+      "fecha": "2026-04-01",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "instrumento": "accion",
+      "tipo": "compra",
+      "activo": "SUPV",
+      "cantidad": 20657,
+      "precio_ars": 2800,
+      "importe_ars": 57839600,
+      "usd_mep": 1422,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": true,
+      "origen": "manual"
+    },
+    {
+      "id": "mnj9n554uk2lcleql2k",
+      "fondo_id": "mnj96pdq06ywc4pvv15c",
+      "fecha": "2026-04-01",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "instrumento": "accion",
+      "tipo": "compra",
+      "activo": "GGAL",
+      "cantidad": 500,
+      "precio_ars": 6850,
+      "importe_ars": 3425000,
+      "usd_mep": 1434.29,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": true,
+      "origen": "manual"
+    },
+    {
+      "id": "mnj9w6pw4sgcqetu9qa",
+      "fondo_id": "mnj96pdq06ywc4pvv15c",
+      "fecha": "2026-04-01",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "instrumento": "accion",
+      "tipo": "compra",
+      "activo": "NU",
+      "cantidad": 2.4,
+      "precio_ars": 10680,
+      "importe_ars": 25632,
+      "usd_mep": 1422,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": true,
+      "origen": "manual"
+    },
+    {
+      "id": "mnnml4khjnrs69das9p",
+      "fondo_id": "mndacgx2eh7tkye4jk",
+      "fecha": "2026-04-06",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "instrumento": "renta_fija",
+      "tipo": "venta",
+      "activo": "VSCVO",
+      "cantidad": 10000,
+      "precio_ars": 158840,
+      "importe_ars": 15884000,
+      "usd_mep": 1426.37,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": false,
+      "origen": "manual"
+    },
+    {
+      "id": "mnnmltto5zpr9wljaxo",
+      "fondo_id": "mndacgx2eh7tkye4jk",
+      "fecha": "2026-04-06",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "instrumento": "renta_fija",
+      "tipo": "compra",
+      "activo": "DNC7O",
+      "cantidad": 2000,
+      "precio_ars": 155300,
+      "importe_ars": 3106000,
+      "usd_mep": 1426.37,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": false,
+      "origen": "manual"
+    },
+    {
+      "id": "mnnmna1xxth3asxmfk",
+      "fondo_id": "mndacgx2eh7tkye4jk",
+      "fecha": "2026-04-06",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "instrumento": "renta_fija",
+      "tipo": "compra",
+      "activo": "GD35",
+      "cantidad": 8000,
+      "precio_ars": 109205,
+      "importe_ars": 8736400,
+      "usd_mep": 1426.37,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": false,
+      "origen": "manual"
+    },
+    {
+      "id": "mnnmsafnd9i02ye8419",
+      "fondo_id": "mn860n9w9ball66gma",
+      "fecha": "2026-04-06",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "instrumento": "accion",
+      "tipo": "venta",
+      "activo": "YPFD",
+      "cantidad": 151,
+      "precio_ars": 62275,
+      "importe_ars": 9403525,
+      "usd_mep": 1426.37,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": false,
+      "origen": "manual"
+    },
+    {
+      "id": "mnnmu8e1t19enw0pea",
+      "fondo_id": "mn860n9w9ball66gma",
+      "fecha": "2026-04-06",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "instrumento": "accion",
+      "tipo": "compra",
+      "activo": "SUPV",
+      "cantidad": 3291,
+      "precio_ars": 2805,
+      "importe_ars": 9231255,
+      "usd_mep": 1426.37,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": false,
+      "origen": "manual"
+    },
+    {
+      "id": "mnnmyteww532afudk5",
+      "fondo_id": "mn86bzothsctsscgse",
+      "fecha": "2026-04-06",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "instrumento": "futuro",
+      "tipo": "futuro_compra",
+      "activo": "GGAL/ABR26",
+      "cantidad": 2,
+      "precio_ars": 6967,
+      "importe_ars": 1393400,
+      "usd_mep": 1426.37,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": false,
+      "origen": "manual"
+    },
+    {
+      "id": "mnnnqcwobpbq7nlqsse",
+      "transfer_id": "mnnnqcwook4h6gfpim",
+      "fondo_id": "mn860n9w9ball66gma",
+      "fecha": "2026-04-06",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "instrumento": "accion",
+      "tipo": "transfer_out",
+      "activo": "COME",
+      "cantidad": 6000,
+      "precio_ars": 52.5,
+      "importe_ars": 315000,
+      "usd_mep": 1426.37,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "Transferencia a OIL & GAS",
+      "aporte_capital": false,
+      "origen": "transferencia"
+    },
+    {
+      "id": "mnnnqcwor4igfzlc3z9",
+      "transfer_id": "mnnnqcwook4h6gfpim",
+      "fondo_id": "mn86bzothsctsscgse",
+      "fecha": "2026-04-06",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "instrumento": "accion",
+      "tipo": "transfer_in",
+      "activo": "COME",
+      "cantidad": 6000,
+      "precio_ars": 52.5,
+      "importe_ars": 315000,
+      "usd_mep": 1426.37,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "Transferencia desde Bancos",
+      "aporte_capital": false,
+      "origen": "transferencia"
+    },
+    {
+      "id": "mnnnqqpji73zc1m8mt",
+      "transfer_id": "mnnnqqpj1wkppoykq81",
+      "fondo_id": "mn860n9w9ball66gma",
+      "fecha": "2026-04-06",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "instrumento": "renta_fija",
+      "tipo": "transfer_out",
+      "activo": "S17A6",
+      "cantidad": 18538150,
+      "precio_ars": 108.951,
+      "importe_ars": 20197499.807,
+      "usd_mep": 1426.37,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "Transferencia a OIL & GAS",
+      "aporte_capital": false,
+      "origen": "transferencia"
+    },
+    {
+      "id": "mnnnqqpjpllxhtdoiln",
+      "transfer_id": "mnnnqqpj1wkppoykq81",
+      "fondo_id": "mn86bzothsctsscgse",
+      "fecha": "2026-04-06",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "instrumento": "renta_fija",
+      "tipo": "transfer_in",
+      "activo": "S17A6",
+      "cantidad": 18538150,
+      "precio_ars": 108.951,
+      "importe_ars": 20197499.807,
+      "usd_mep": 1426.37,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "Transferencia desde Bancos",
+      "aporte_capital": false,
+      "origen": "transferencia"
+    },
+    {
+      "id": "mnnnr8o7c5ma6cbx6x5",
+      "transfer_id": "mnnnr8o7lg2ekvw47cn",
+      "fondo_id": "mn86bzothsctsscgse",
+      "fecha": "2026-04-06",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "instrumento": "accion",
+      "tipo": "transfer_out",
+      "activo": "GGAL",
+      "cantidad": 500,
+      "precio_ars": 6890,
+      "importe_ars": 3445000,
+      "usd_mep": 1426.37,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "Transferencia a Bancos",
+      "aporte_capital": false,
+      "origen": "transferencia"
+    },
+    {
+      "id": "mnnnr8o7e502qdhb2jt",
+      "transfer_id": "mnnnr8o7lg2ekvw47cn",
+      "fondo_id": "mn860n9w9ball66gma",
+      "fecha": "2026-04-06",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "instrumento": "accion",
+      "tipo": "transfer_in",
+      "activo": "GGAL",
+      "cantidad": 500,
+      "precio_ars": 6890,
+      "importe_ars": 3445000,
+      "usd_mep": 1426.37,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "Transferencia desde OIL & GAS",
+      "aporte_capital": false,
+      "origen": "transferencia"
+    },
+    {
+      "id": "mnnnuizh048c06bpf78s",
+      "transfer_id": "mnnnuizh9dsrz1vb0zd",
+      "fondo_id": "mndacgx2eh7tkye4jk",
+      "fecha": "2026-04-06",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "instrumento": "renta_fija",
+      "tipo": "transfer_out",
+      "activo": "S17A6",
+      "cantidad": 295611,
+      "precio_ars": 108.61,
+      "importe_ars": 321063.107,
+      "usd_mep": 1426.37,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "Transferencia a OIL & GAS",
+      "aporte_capital": false,
+      "origen": "transferencia"
+    },
+    {
+      "id": "mnnnuizh8chj4rpx34h",
+      "transfer_id": "mnnnuizh9dsrz1vb0zd",
+      "fondo_id": "mn86bzothsctsscgse",
+      "fecha": "2026-04-06",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "instrumento": "renta_fija",
+      "tipo": "transfer_in",
+      "activo": "S17A6",
+      "cantidad": 295611,
+      "precio_ars": 108.61,
+      "importe_ars": 321063.107,
+      "usd_mep": 1426.37,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "Transferencia desde Renta Fija",
+      "aporte_capital": false,
+      "origen": "transferencia"
+    },
+    {
+      "id": "mnnnw2gsufak1a2mqz",
+      "transfer_id": "mnnnw2gsq5v18ovdezm",
+      "fondo_id": "mndacgx2eh7tkye4jk",
+      "fecha": "2026-04-06",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "instrumento": "accion",
+      "tipo": "transfer_out",
+      "activo": "GGAL",
+      "cantidad": 1200,
+      "precio_ars": 6435,
+      "importe_ars": 7722000,
+      "usd_mep": 1426.37,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "Transferencia a Bancos",
+      "aporte_capital": false,
+      "origen": "transferencia"
+    },
+    {
+      "id": "mnnnw2gs2xiu8ovyr88",
+      "transfer_id": "mnnnw2gsq5v18ovdezm",
+      "fondo_id": "mn860n9w9ball66gma",
+      "fecha": "2026-04-06",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "instrumento": "accion",
+      "tipo": "transfer_in",
+      "activo": "GGAL",
+      "cantidad": 1200,
+      "precio_ars": 6435,
+      "importe_ars": 7722000,
+      "usd_mep": 1426.37,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "Transferencia desde Renta Fija",
+      "aporte_capital": false,
+      "origen": "transferencia"
+    },
+    {
+      "id": "mnqi4bgb8ytklhewevp",
+      "fondo_id": "mndacgx2eh7tkye4jk",
+      "fecha": "2026-04-08",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "instrumento": "liquidez",
+      "tipo": "retiro",
+      "activo": "",
+      "cantidad": null,
+      "precio_ars": null,
+      "importe_ars": 4041600,
+      "usd_mep": 1421.17,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": false,
+      "origen": "manual"
+    },
+    {
+      "id": "mnqi4q7upxhz6knjar",
+      "fondo_id": "mn860n9w9ball66gma",
+      "fecha": "2026-04-08",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "instrumento": "liquidez",
+      "tipo": "retiro",
+      "activo": "",
+      "cantidad": null,
+      "precio_ars": null,
+      "importe_ars": 172270,
+      "usd_mep": 1421.17,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": false,
+      "origen": "manual"
+    },
+    {
+      "id": "mnqidsd9ie53ocb61c",
+      "fondo_id": "mn86bzothsctsscgse",
+      "fecha": "2026-04-08",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "instrumento": "liquidez",
+      "tipo": "retiro",
+      "activo": "",
+      "cantidad": null,
+      "precio_ars": null,
+      "importe_ars": 19,
+      "usd_mep": 1421.17,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": false,
+      "origen": "manual"
+    },
+    {
+      "id": "mntdq5hge0kg5r58j77",
+      "fondo_id": "mn86bzothsctsscgse",
+      "fecha": "2026-04-10",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "instrumento": "futuro",
+      "tipo": "futuro_compra",
+      "activo": "PAMP/ABR26",
+      "cantidad": 2,
+      "precio_ars": 5230,
+      "importe_ars": 1046000,
+      "usd_mep": 1414.25,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": false,
+      "origen": "manual"
+    },
+    {
+      "id": "mny0m288fbm83mwq1e",
+      "fondo_id": "mn86bzothsctsscgse",
+      "fecha": "2026-04-14",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "instrumento": "renta_fija",
+      "tipo": "venta",
+      "activo": "S17A6",
+      "cantidad": 44751967,
+      "precio_ars": 109.934,
+      "importe_ars": 49197627.4,
+      "usd_mep": 1403.15,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": false,
+      "origen": "manual"
+    },
+    {
+      "id": "mny10gxamq6rbxz9ii",
+      "fondo_id": "mn86bzothsctsscgse",
+      "fecha": "2026-04-14",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "instrumento": "renta_fija",
+      "tipo": "compra",
+      "activo": "S29Y6",
+      "cantidad": 12062967,
+      "precio_ars": 128.468,
+      "importe_ars": 15497052.45,
+      "usd_mep": 1403.15,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": false,
+      "origen": "manual"
+    },
+    {
+      "id": "mny14yhi4a93hzcto44",
+      "fondo_id": "mn86bzothsctsscgse",
+      "fecha": "2026-04-14",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "instrumento": "renta_fija",
+      "tipo": "compra",
+      "activo": "T30J6",
+      "cantidad": 24475000,
+      "precio_ars": 137.7,
+      "importe_ars": 33702075,
+      "usd_mep": 1403.15,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": false,
+      "origen": "manual"
+    },
+    {
+      "id": "mo0jmhmasls1nlms4km",
+      "fondo_id": "mndacgx2eh7tkye4jk",
+      "fecha": "2026-04-15",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "instrumento": "renta_fija",
+      "tipo": "venta",
+      "activo": "DNC7O",
+      "cantidad": 2000,
+      "precio_ars": 154500,
+      "importe_ars": 3090000,
+      "usd_mep": 1399.34,
+      "comision": 0,
+      "impuestos": 0,
+      "obs": "",
+      "aporte_capital": false,
+      "origen": "manual"
+    }
+  ],
+  "precios": {
+    "PAMP/ABR26": {
+      "precio": 5185,
+      "instrumento": "futuro",
+      "fecha": "2026-04-10",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "origen_precio": "manual"
+    },
+    "COME": {
+      "precio": 49.36,
+      "instrumento": "accion",
+      "fecha": "2026-04-14",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "origen_precio": "manual"
+    },
+    "GGAL": {
+      "precio": 7135,
+      "instrumento": "accion",
+      "fecha": "2026-04-14",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "origen_precio": "manual"
+    },
+    "GGAL/ABR26": {
+      "precio": 7094,
+      "instrumento": "futuro",
+      "fecha": "2026-04-08",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "origen_precio": "csv"
+    },
+    "PAMP": {
+      "precio": 5095,
+      "instrumento": "accion",
+      "fecha": "2026-04-14",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "origen_precio": "manual"
+    },
+    "S17A6": {
+      "precio": 109.94,
+      "instrumento": "renta_fija",
+      "fecha": "2026-04-14",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "origen_precio": "manual"
+    },
+    "S29Y6": {
+      "precio": 128.45,
+      "instrumento": "renta_fija",
+      "fecha": "2026-04-14",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "origen_precio": "manual"
+    },
+    "YPFD": {
+      "precio": 64100,
+      "instrumento": "accion",
+      "fecha": "2026-04-08",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "origen_precio": "csv"
+    },
+    "YPFD/ABR26": {
+      "precio": 65400,
+      "instrumento": "futuro",
+      "fecha": "2026-04-08",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "origen_precio": "csv"
+    },
+    "GD35": {
+      "precio": 113350,
+      "instrumento": "renta_fija",
+      "fecha": "2026-04-14",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "origen_precio": "manual"
+    },
+    "VSCVO": {
+      "precio": 159710,
+      "instrumento": "renta_fija",
+      "fecha": "2026-04-06",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "origen_precio": "manual"
+    },
+    "DNC3O": {
+      "precio": 148700,
+      "instrumento": "renta_fija",
+      "fecha": "2026-04-14",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "origen_precio": "manual"
+    },
+    "TLCMO": {
+      "precio": 158340,
+      "instrumento": "renta_fija",
+      "fecha": "2026-04-14",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "origen_precio": "manual"
+    },
+    "TSC3O": {
+      "precio": 159000,
+      "instrumento": "renta_fija",
+      "fecha": "2026-04-14",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "origen_precio": "manual"
+    },
+    "ZZC1O": {
+      "precio": 144520,
+      "instrumento": "renta_fija",
+      "fecha": "2026-04-14",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "origen_precio": "manual"
+    },
+    "SUPV": {
+      "precio": 2800,
+      "instrumento": "accion",
+      "fecha": "2026-04-14",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "origen_precio": "manual"
+    },
+    "NU": {
+      "precio": 10980,
+      "instrumento": "accion",
+      "fecha": "2026-04-14",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "origen_precio": "manual"
+    },
+    "DNC7O": {
+      "precio": 153550,
+      "instrumento": "renta_fija",
+      "fecha": "2026-04-14",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "origen_precio": "manual"
+    },
+    "T30J6": {
+      "precio": 137.68,
+      "instrumento": "renta_fija",
+      "fecha": "2026-04-14",
+      "periodo_mes": 4,
+      "periodo_anio": 2026,
+      "origen_precio": "manual"
+    }
+  },
+  "cierres": [],
+  "config": {
+    "usd_mep_default": 1399.34,
+    "inflacion_mensual": {
+    }
+  }
+};
+// ── CLOUD CONFIG ──
+const WORKER_URL = 'https://floral-night-f102.pablogaita.workers.dev';
+let AUTH_TOKEN = localStorage.getItem('fci_token') || null;
+
+// LOGIN
+async function doLogin(){
+  const user = document.getElementById('l-user').value.trim();
+  const pass = document.getElementById('l-pass').value.trim();
+  const err  = document.getElementById('login-error');
+  err.textContent = 'Verificando...';
+  try{
+    const r = await fetch(WORKER_URL+'/login',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({user,pass})
+    });
+    const d = await r.json();
+    if(d.ok){
+      AUTH_TOKEN = d.token;
+      localStorage.setItem('fci_token', AUTH_TOKEN);
+      document.getElementById('login-screen').style.display='none';
+      await initApp();
+    } else {
+      err.textContent = d.error || 'Error de acceso';
+    }
+  }catch(e){ err.textContent = 'Error de conexión'; }
+}
+
+// DB CLOUD
+async function loadDBCloud(){
+  try{
+    const r = await fetch(WORKER_URL+'/db',{headers:{Authorization:'Bearer '+AUTH_TOKEN}});
+    if(r.status===401){ showLoginScreen(); return null; }
+    const d = await r.json();
+    return d;
+  }catch(e){ return null; }
+}
+async function saveDBCloud(){
+  try{
+    await fetch(WORKER_URL+'/db',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+AUTH_TOKEN},
+      body:JSON.stringify(db)
+    });
+    showSyncBadge(true);
+  }catch(e){ showSyncBadge(false); }
+}
+function showSyncBadge(ok){
+  let b = document.getElementById('sync-badge');
+  if(!b){ b=document.createElement('span'); b.id='sync-badge'; b.className='sync-badge'; const logo=document.querySelector('.sidebar-logo h1'); if(logo) logo.appendChild(b); }
+  b.className='sync-badge '+(ok?'sync-ok':'sync-err');
+  b.textContent = ok?'✓ sync':'✗ sync';
+  if(ok) setTimeout(()=>b.textContent='',3000);
+}
+function showLoginScreen(){
+  AUTH_TOKEN=null; localStorage.removeItem('fci_token');
+  document.getElementById('login-screen').style.display='flex';
+}
+
+// IOL PRECIOS
+async function fetchPrecioIOL(ticker, mercado='bCBA'){
+  try{
+    const r = await fetch(`${WORKER_URL}/iol/precio/${ticker}?mercado=${mercado}`,{
+      headers:{Authorization:'Bearer '+AUTH_TOKEN}
+    });
+    if(!r.ok) return null;
+    const d = await r.json();
+    return d.ultimoPrecio ?? d.cotizacion?.ultimoPrecio ?? null;
+  }catch(e){ return null; }
+}
+
+function initDB(){
+  const now=new Date();
+  return {periodo:{mes:now.getMonth()+1,anio:now.getFullYear()},fondos:[],movimientos:[],precios:{},cierres:[],config:{usd_mep_default:1413,inflacion_mensual:{}}};
+}
+function migrateDB(data){
+  if(!data) return;
+  if(data.fondos) data.fondos.forEach(f=>{
+    if(f.estado==='fusionado'){ f.activo=false; delete f.estado; }
+    delete f.fusionado_en; delete f.fusionado_fecha; delete f.fusionado_nota; delete f.fusiones;
+  });
+  if(data.movimientos) data.movimientos.forEach(m=>{
+    delete m.fondo_id_origen; delete m.fusionado_en_fecha;
+  });
+}
+function saveDB(){
+  saveDBCloud();
+}
+
+let db = initDB();
+let currentPage = 'dashboard';
+let currentFondoId = null;
+let editingFondoId = null;
+let editingMovId = null;
+let cierreTabActiva = null;
+let movSort = {col:'fecha', asc:false};
+let cartSort = {col:null, asc:true};
+
+// Startup migrations
+(function migrate(){
+  // Trim activos
+  db.movimientos.forEach(m=>{ if(m.activo) m.activo=m.activo.trim(); });
+  const newP={}; Object.keys(db.precios).forEach(k=>{ newP[k.trim().toUpperCase()]=db.precios[k]; }); db.precios=newP;
+  saveDB();
+})();
+
+// ============================================================
+// UTILS
+// ============================================================
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2); }
+
+// normalizeTicker: evita confusión O/0 — en tickers argentinos el último char
+// suele ser letra (O=Obligación, D=Dólar, etc), no dígito. Solo normaliza
+// el sufijo final cuando todo el resto es alfanumérico ambiguo.
+// Estrategia simple: trim + uppercase. La distinción O/0 es responsabilidad del usuario.
+function normalizeTicker(s){
+  if(!s) return '';
+  return s.trim().toUpperCase();
+}
+
+// ── PRECISIÓN ──────────────────────────────────────────────────
+// rp(n): redondeo estándar a 3 decimales — cálculos intermedios y snapshots.
+// r2(n): redondeo a 2 decimales — SOLO valores visibles en UI y totales de tabla.
+// Flujo: intermedios con rp() → fila visible con r2() → total = suma de filas r2()
+function rp(n){ return Math.round((Number(n)||0)*1000)/1000; }
+function r2(n){ return Math.round((Number(n)||0)*100)/100; }
+function r3(n){ return rp(n); }
+
+function fmt(n,dec=2){
+  if(n===null||n===undefined||isNaN(n))return '—';
+  return Number(n).toLocaleString('es-AR',{minimumFractionDigits:dec,maximumFractionDigits:dec});
+}
+function fmtARS(n){ return '$ '+fmt(n,2); }
+function fmtUSD(n){ return 'U$S '+fmt(n,2); }
+function fmtPct(n){
+  if(n===null||n===undefined||isNaN(n))return '—';
+  const v=r2(n);
+  if(v===0)return '0,00%';
+  return (v>0?'+':'')+v.toFixed(2).replace('.',',')+('%');
+}
+function fmtInput(n,dec=2){
+  if(n===null||n===undefined||isNaN(n)||n==='')return '';
+  return fmt(Number(n),dec);
+}
+function parseAR(str){
+  if(str===null||str===undefined||str==='')return NaN;
+  if(typeof str==='number')return str;
+  const s=String(str).trim();
+  if(/^-?[\d.]+,\d+$/.test(s)||/^-?[\d.]+$/.test(s.replace(/\./g,''))){
+    return parseFloat(s.replace(/\./g,'').replace(',','.'));
+  }
+  return parseFloat(s.replace(',',''));
+}
+function reformatInput(el,dec=2){
+  const v=parseAR(el.value);
+  if(!isNaN(v)&&el.value.trim()!=='') el.value=fmt(v,dec);
+}
+function colorClass(n){
+  const v=r2(n);
+  if(v===0)return '';
+  return v>0?'text-green':'text-red';
+}
+function badgeClass(n){
+  const v=r2(n);
+  if(v===0)return 'badge-gray';
+  return v>0?'badge-green':'badge-red';
+}
+function periodoLabel(p){
+  const m=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  return m[p.mes-1]+' '+p.anio;
+}
+function getFondoColor(idx){
+  return ['#7ab8e8','#7ecfa0','#e8c97a','#b49fe0','#e07070','#70c8e0'][idx%6];
+}
+function tipoLabel(t){
+  const m={deposito:'Depósito',retiro:'Retiro',compra:'Compra',venta:'Venta',renta:'Renta/Cupón',dividendo:'Dividendo',futuro_compra:'Fut.Compra',futuro_venta:'Fut.Venta',opcion_call:'Call',opcion_put:'Put',transfer_out:'Transfer.Out',transfer_in:'Transfer.In',otro:'Otro'};
+  return m[t]||t;
+}
+function normalizeBono(instr){ return instr==='bono'?'renta_fija':instr; }
+function instrBadge(instr){
+  instr=normalizeBono(instr);
+  const cfg={
+    renta_fija:['RF','badge-blue'],
+    accion:['Acc.','badge-green'],
+    cedear:['CED.','badge-purple' ],
+    fci:['FCI','badge-gray'],
+    futuro:['Fut.','badge-yellow'],
+    opcion:['Opc.','badge-yellow'],
+    otro:['Otro','badge-gray']
+  };
+  const [lbl,cls]=cfg[instr]||['?','badge-gray'];
+  return `<span class="badge ${cls}" style="font-size:9px;padding:1px 5px">${lbl}</span>`;
+}
+function instrLabel(i){
+  i=normalizeBono(i);
+  const m={liquidez:'Liquidez',renta_fija:'Renta Fija',accion:'Acción',cedear:'CEDEAR',fci:'FCI',futuro:'Futuro',opcion:'Opción',otro:'Otro'};
+  return m[i]||i||'—';
+}
+function fondosOrdenados(soloActivos=true){
+  const fondos=db.fondos.filter(f=>!soloActivos||f.activo!==false);
+  fondos.forEach((f,i)=>{ if(f.orden==null) f.orden=i; });
+  return fondos.slice().sort((a,b)=>a.orden-b.orden);
+}
+
+// ============================================================
+// PRECIO ACTUAL — respeta período activo
+// ============================================================
+function getPrecioActual(activo){
+  if(!activo) return null;
+  const p=db.precios[activo.trim().toUpperCase()];
+  if(!p||!p.precio) return null;
+  if(p.periodo_mes!=null&&p.periodo_anio!=null){
+    if(p.periodo_mes!==db.periodo.mes||p.periodo_anio!==db.periodo.anio) return null;
+  }
+  return p.precio;
+}
+function getPrecioVigencia(activo){
+  const p=db.precios[activo];
+  if(!p||!p.precio) return 'sin_precio';
+  if(p.periodo_mes===db.periodo.mes&&p.periodo_anio===db.periodo.anio) return 'actualizado';
+  return 'arrastrado';
+}
+function badgePrecioVigencia(activo){
+  const v=getPrecioVigencia(activo);
+  if(v==='actualizado') return '<span class="badge badge-green" style="font-size:9px;padding:1px 5px">✓</span>';
+  if(v==='arrastrado') return '<span class="badge" style="background:var(--yellow);color:#000;font-size:9px;padding:1px 5px">↩</span>';
+  return '<span class="badge badge-gray" style="font-size:9px;padding:1px 5px">—</span>';
+}
+// getPrecioValuacion: fuente de verdad para valuar una posición.
+// Prioridad: spot vigente → precio arrastrado (cualquier período) → PPC del activo (neutro).
+// Devuelve { precio, estado } donde estado es:
+//   'actual'          — spot del período activo
+//   'arrastrado'      — spot de un período anterior
+//   'estimado_compra' — usando PPC (sin spot de ningún período)
+//   'sin_precio'      — no hay ningún precio (no debería ocurrir si hay PPC)
+function getPrecioValuacion(activo, ppc_fallback) {
+  const key = activo?.trim().toUpperCase();
+  if (!key) return { precio: null, estado: 'sin_precio' };
+
+  const p = db.precios[key];
+
+  // 1. Spot vigente del período activo
+  if (p?.precio && p.periodo_mes === db.periodo.mes && p.periodo_anio === db.periodo.anio) {
+    return { precio: p.precio, estado: 'actual' };
+  }
+
+  // 2. Último precio guardado (cualquier período = arrastrado)
+  if (p?.precio) {
+    return { precio: p.precio, estado: 'arrastrado' };
+  }
+
+  // 3. PPC del activo como fallback neutro (resultado = 0, no destruye patrimonio)
+  if (ppc_fallback != null && ppc_fallback > 0) {
+    return { precio: ppc_fallback, estado: 'estimado_compra' };
+  }
+
+  return { precio: null, estado: 'sin_precio' };
+}
+
+function badgePrecioEstado(estado) {
+  if (estado === 'actual')          return '<span class="badge badge-green" style="font-size:9px;padding:1px 5px">✓</span>';
+  if (estado === 'arrastrado')      return '<span class="badge" style="background:var(--yellow);color:#000;font-size:9px;padding:1px 5px">↩</span>';
+  if (estado === 'estimado_compra') return '<span class="badge" style="background:var(--purple);color:#fff;font-size:9px;padding:1px 5px">~</span>';
+  return '<span class="badge badge-gray" style="font-size:9px;padding:1px 5px">—</span>';
+}
+
+function getSnapAnterior(fondoId){
+  const pm=db.periodo.mes===1?12:db.periodo.mes-1;
+  const pa=db.periodo.mes===1?db.periodo.anio-1:db.periodo.anio;
+  return db.cierres.find(c=>c.fondo_id===fondoId&&c.mes===pm&&c.anio===pa&&c.tipo_snapshot==='fondo')||null;
+}
+
+// ============================================================
+// CORE ENGINE: buildFromMovimientos()
+// Única fuente de verdad. Devuelve:
+//   - posiciones: cartera histórica (buildCartera)
+//   - liquidez, aportes, retiros
+//   - tablaCarteraARS[]: filas con CIM, CA, Resultado (2 dec por fila)
+//   - tablaCarteraUSD[]: ídem en dólares
+//   - totalesARS: { cim, ca, resultado } = suma de filas redondeadas
+//   - totalesUSD: ídem
+//   - metaFondo: patrimonio, liquidez, aportes, retiros, capitalInvertido, mepInicio
+// ============================================================
+function buildCartera(fondoId){
+  const movs=db.movimientos.filter(m=>m.fondo_id===fondoId)
+    .sort((a,b)=>new Date(a.fecha)-new Date(b.fecha));
+  const pos={};
+  movs.forEach(m=>{
+    if(!m.activo) return;
+    const key=m.activo.trim().toUpperCase();
+    const isFuturo=m.instrumento==='futuro';
+    if(!pos[key]) pos[key]={
+      activo:key, instrumento:normalizeBono(m.instrumento||'otro'),
+      cantidad:0, costo_total:0, precio_promedio:0, costo_usd:0,
+      contratos_vendidos:0, precio_venta_promedio:0, costo_usd_vendido:0,
+      contratos_comprados:0, precio_compra_promedio:0, costo_usd_comprado:0,
+      es_futuro:false
+    };
+    const p=pos[key];
+    if(isFuturo) p.es_futuro=true;
+    const imp=parseFloat(m.importe_ars)||0;
+    const cant=parseFloat(m.cantidad)||0;
+    const precio=parseFloat(m.precio_ars)||0;
+    const mep_entrada=parseFloat(m.usd_mep)||1399;
+    if(isFuturo){
+      if(m.tipo==='futuro_venta'){
+        if(p.contratos_comprados>0){
+          const cerrar=Math.min(cant,p.contratos_comprados);
+          p.contratos_comprados-=cerrar;
+          const resto=cant-cerrar;
+          if(resto>0){
+            const total=p.contratos_vendidos*p.precio_venta_promedio+resto*precio;
+            p.contratos_vendidos+=resto;
+            p.precio_venta_promedio=p.contratos_vendidos>0?total/p.contratos_vendidos:0;
+          }
+        } else {
+          const total=p.contratos_vendidos*p.precio_venta_promedio+cant*precio;
+          p.contratos_vendidos+=cant;
+          p.precio_venta_promedio=p.contratos_vendidos>0?total/p.contratos_vendidos:0;
+          p.costo_usd_vendido+=(cant*precio*100)/mep_entrada;
+        }
+      } else if(m.tipo==='futuro_compra'){
+        if(p.contratos_vendidos>0){
+          const cerrar=Math.min(cant,p.contratos_vendidos);
+          p.contratos_vendidos-=cerrar;
+          if(p.contratos_vendidos<=0) p.precio_venta_promedio=0;
+          const resto=cant-cerrar;
+          if(resto>0){
+            const total=p.contratos_comprados*p.precio_compra_promedio+resto*precio;
+            p.contratos_comprados+=resto;
+            p.precio_compra_promedio=p.contratos_comprados>0?total/p.contratos_comprados:0;
+          }
+        } else {
+          const total=p.contratos_comprados*p.precio_compra_promedio+cant*precio;
+          p.contratos_comprados+=cant;
+          p.precio_compra_promedio=p.contratos_comprados>0?total/p.contratos_comprados:0;
+          p.costo_usd_comprado+=(cant*precio*100)/mep_entrada;
+        }
+      }
+      p.cantidad=p.contratos_vendidos+p.contratos_comprados;
+    } else if(['compra','opcion_call','opcion_put'].includes(m.tipo)){
+      p.costo_total+=imp; p.cantidad+=cant; p.costo_usd+=imp/mep_entrada;
+      if(p.cantidad>0.0001)
+        p.precio_promedio=p.instrumento==='renta_fija'?p.costo_total/(p.cantidad/100):p.costo_total/p.cantidad;
+    } else if(m.tipo==='venta'||m.tipo==='transfer_out'){
+      // venta y transfer_out reducen posición de la misma forma (a costo proporcional)
+      const prop=p.cantidad>0?cant/p.cantidad:0;
+      const prom=p.cantidad>0?p.costo_total/p.cantidad:0;
+      p.costo_usd-=p.costo_usd*prop;
+      p.costo_total-=prom*cant; p.cantidad-=cant;
+      if(p.cantidad>0.0001)
+        p.precio_promedio=p.instrumento==='renta_fija'?p.costo_total/(p.cantidad/100):p.costo_total/p.cantidad;
+      else{ p.cantidad=0; p.costo_total=0; p.precio_promedio=0; p.costo_usd=0; }
+    } else if(m.tipo==='transfer_in'){
+      // transfer_in suma posición al PPC mensual del origen (importe_ars = CIM proporcional)
+      // Se trata igual que una compra para buildCartera (acumula costo y cantidad)
+      const mep_entrada=parseFloat(m.usd_mep)||1399;
+      p.costo_total+=imp; p.cantidad+=cant; p.costo_usd+=imp/mep_entrada;
+      if(p.cantidad>0.0001)
+        p.precio_promedio=p.instrumento==='renta_fija'?p.costo_total/(p.cantidad/100):p.costo_total/p.cantidad;
+    }
+  });
+  return Object.values(pos).filter(p=>p.cantidad>0.0001);
+}
+
+// PPC mensual: Precio Ponderado de Compra del mes activo.
+//
+// Lógica correcta:
+//   1. buildCartera() ya maneja compras/ventas/transfers con costo proporcional acumulado.
+//      Su `costo_total` y `precio_promedio` reflejan el costo real de la posición remanente.
+//   2. Sin snapshot anterior → PPC = precio_promedio de buildCartera (ya es correcto).
+//   3. Con snapshot anterior → necesitamos usar el precio de cierre anterior solo para
+//      valuar la porción heredada, pero respetando las ventas del mes que ya redujo
+//      buildCartera proporcionalmente.
+//
+// Algoritmo:
+//   A) Calcular cartera "solo hasta fin de período anterior" (movimientos < período activo)
+//      para saber qué cantidad/costo había heredado antes de cualquier operación del mes.
+//   B) Calcular compras netas del mes (compras - ventas proporcionales ya en buildCartera).
+//   C) Mezclar: valor_heredado (a precio cierre anterior) + costo_compras_mes (importe real).
+//   D) Dividir por cantidad remanente actual (posHist.cantidad de buildCartera).
+//
+// Esto garantiza que una venta parcial no infla el PPC de lo que queda.
+function getPPCMensual(fondoId, activo, instrumento){
+  const snapAnt=getSnapAnterior(fondoId);
+  const precioCierreAnt=snapAnt?.precios_cierre?.[activo]??null;
+
+  // Posición remanente actual (ya refleja ventas proporcionales)
+  const cartActual=buildCartera(fondoId);
+  const posActual=cartActual.find(p=>p.activo===activo)||null;
+  const cantidadActual=posActual?.cantidad||0;
+
+  if(cantidadActual<0.0001) return{ precioCierreAnt, ppc_mensual:null };
+
+  // Sin cierre anterior: el precio_promedio de buildCartera es la fuente de verdad.
+  // buildCartera acumula correctamente compras y descuenta ventas proporcionales.
+  if(!snapAnt){
+    const ppc_mensual=rp(posActual.precio_promedio??0);
+    return{ precioCierreAnt:null, ppc_mensual };
+  }
+
+  // Con cierre anterior:
+  // Necesitamos saber cuánto stock venía del período anterior (antes del mes activo).
+  // Construimos la cartera solo con movimientos anteriores al período activo.
+  const movsPrevios=db.movimientos.filter(m=>
+    m.fondo_id===fondoId&&
+    !(m.periodo_mes===db.periodo.mes&&m.periodo_anio===db.periodo.anio)
+  );
+  // buildCarteraDesde: misma lógica que buildCartera pero solo con movsPrevios
+  const posPrev=_buildCarteraDesdeMovs(movsPrevios, activo);
+  const cantHeredada=posPrev?.cantidad||0;
+
+  // Compras del mes activo (brutas, sin ventas — el descuento proporcional ya está en cantidadActual)
+  const comprasMes=db.movimientos.filter(m=>
+    m.fondo_id===fondoId&&
+    m.activo?.trim().toUpperCase()===activo&&
+    m.periodo_mes===db.periodo.mes&&m.periodo_anio===db.periodo.anio&&
+    ['compra','renta_fija','opcion_call','opcion_put','transfer_in'].includes(m.tipo)
+  );
+  const cantComprasMes=comprasMes.reduce((s,m)=>s+(parseFloat(m.cantidad)||0),0);
+  const importeComprasMes=comprasMes.reduce((s,m)=>s+(parseFloat(m.importe_ars)||0),0);
+
+  // Ventas del mes activo (para saber qué parte de lo heredado salió)
+  const ventasMes=db.movimientos.filter(m=>
+    m.fondo_id===fondoId&&
+    m.activo?.trim().toUpperCase()===activo&&
+    m.periodo_mes===db.periodo.mes&&m.periodo_anio===db.periodo.anio&&
+    ['venta','transfer_out'].includes(m.tipo)
+  );
+  const cantVentasMes=ventasMes.reduce((s,m)=>s+(parseFloat(m.cantidad)||0),0);
+
+  // Cantidad heredada que quedó después de las ventas del mes
+  // Las ventas afectan FIFO: primero sale lo heredado, luego lo comprado en el mes.
+  // Simplificación conservadora (igual a Excel con PPC): las ventas reducen
+  // proporcionalmente entre heredado y comprado del mes, o se considera que
+  // primero sale lo más antiguo (heredado). Usamos la proporción real de buildCartera:
+  // cantidadActual = cantHeredada + cantComprasMes - cantVentasMes
+  // → cantHeredadaRemanente = cantidadActual - cantComprasMes (puede ser negativo si se vendió más de lo heredado)
+  const cantHeredadaRemanente=Math.max(0, cantidadActual-cantComprasMes);
+  const cantComprasMesRemanente=cantidadActual-cantHeredadaRemanente; // lo que queda de compras del mes
+
+  // Valor de la porción heredada remanente
+  let valorHeredadaRemanente=0;
+  if(cantHeredadaRemanente>0){
+    if(precioCierreAnt!=null){
+      // Valuar al precio de cierre anterior
+      valorHeredadaRemanente=instrumento==='renta_fija'
+        ?(cantHeredadaRemanente/100)*precioCierreAnt
+        :cantHeredadaRemanente*precioCierreAnt;
+    } else {
+      // Sin precio de cierre: usar costo histórico proporcional de buildCartera
+      const costoTotal=posActual?.costo_total||0;
+      valorHeredadaRemanente=cantidadActual>0?(costoTotal*cantHeredadaRemanente/cantidadActual):0;
+    }
+  }
+
+  // Valor de las compras del mes remanentes (proporcional al importe original de compras)
+  const valorComprasMesRemanente=cantComprasMes>0
+    ?(importeComprasMes*cantComprasMesRemanente/cantComprasMes)
+    :0;
+
+  const valorTotal=valorHeredadaRemanente+valorComprasMesRemanente;
+  const ppc_mensual=instrumento==='renta_fija'
+    ?rp(valorTotal/(cantidadActual/100))
+    :rp(valorTotal/cantidadActual);
+
+  return{ precioCierreAnt, ppc_mensual };
+}
+
+// Helper: construye la posición de un activo específico desde un array de movimientos.
+// Misma lógica proporcional que buildCartera, pero solo para un activo y desde un array externo.
+function _buildCarteraDesdeMovs(movs, activo){
+  const key=activo.trim().toUpperCase();
+  const sorted=movs.filter(m=>m.activo?.trim().toUpperCase()===key)
+    .sort((a,b)=>new Date(a.fecha)-new Date(b.fecha));
+  if(!sorted.length) return null;
+  let cantidad=0, costo_total=0, precio_promedio=0;
+  const instrumento=sorted[0].instrumento||'otro';
+  sorted.forEach(m=>{
+    const imp=parseFloat(m.importe_ars)||0;
+    const cant=parseFloat(m.cantidad)||0;
+    if(['compra','renta_fija','opcion_call','opcion_put','transfer_in'].includes(m.tipo)){
+      costo_total+=imp; cantidad+=cant;
+      if(cantidad>0.0001)
+        precio_promedio=instrumento==='renta_fija'?costo_total/(cantidad/100):costo_total/cantidad;
+    } else if(m.tipo==='venta'||m.tipo==='transfer_out'){
+      const prop=cantidad>0?cant/cantidad:0;
+      const prom=cantidad>0?costo_total/cantidad:0;
+      costo_total-=prom*cant; cantidad-=cant;
+      if(cantidad>0.0001)
+        precio_promedio=instrumento==='renta_fija'?costo_total/(cantidad/100):costo_total/cantidad;
+      else{ cantidad=0; costo_total=0; precio_promedio=0; }
+    }
+  });
+  return cantidad>0.0001?{cantidad,costo_total,precio_promedio,instrumento}:null;
+}
+
+// ============================================================
+// buildFromMovimientos(fondoId) — motor único
+// Flujo: (snapshot cierre anterior) + movimientos período activo → tablas → totales
+// El snapshot anterior es la fuente del saldo inicial y la liquidez heredada.
+// Sin cierre previo, el fondo arranca desde cero (primer mes).
+// Resultado: tablaARS/tablaUSD son la única fuente de CIM/CA/Resultado visibles.
+// ============================================================
+function buildPosicionesPatrimonio(fondoId){
+  const usd_mep_actual=db.config.usd_mep_default||1399;
+  const snapAnt=getSnapAnterior(fondoId);
+  const fondo=db.fondos.find(f=>f.id===fondoId);
+  const mep_inicio=fondo?.mep_inicio_manual||(snapAnt?.usd_mep_cierre||usd_mep_actual);
+  const saldo_inicial=snapAnt?(snapAnt.patrimonio_ars??snapAnt.saldo_final??0):0;
+
+  const movs_periodo=db.movimientos.filter(m=>
+    m.fondo_id===fondoId&&
+    m.periodo_mes===db.periodo.mes&&m.periodo_anio===db.periodo.anio
+  ).slice().sort((a,b)=>new Date(a.fecha)-new Date(b.fecha)||0);
+
+  // Liquidez, aportes, retiros
+  let liquidez=snapAnt?(snapAnt.liquidez_ars??snapAnt.liquidez_final??0):0;
+  const liquidez_inicial=liquidez;
+  let aportes=0, retiros=0, renta_cobrada=0;
+
+  movs_periodo.forEach(m=>{
+    const imp=parseFloat(m.importe_ars)||0;
+    if(m.tipo==='deposito'){ aportes+=imp; liquidez+=imp; }
+    else if(m.tipo==='retiro'){ retiros+=imp; liquidez-=imp; }
+    else if(['compra','opcion_call','opcion_put','renta_fija'].includes(m.tipo)){ liquidez-=imp; if(m.aporte_capital) aportes+=imp; }
+    else if(m.tipo==='venta'){ liquidez+=imp; }
+    else if(['renta','dividendo'].includes(m.tipo)){ liquidez+=imp; renta_cobrada+=imp; }
+  });
+  liquidez=Math.max(0,rp(liquidez));
+  const aportes_implicitos=r2(movs_periodo.filter(m=>m.origen==='aporte_implicito').reduce((s,m)=>s+(parseFloat(m.importe_ars)||0),0));
+  const base=saldo_inicial+aportes-retiros;
+  const capital_invertido=Math.max(0,base+renta_cobrada);
+
+  let suma_ars=0, suma_usd=0;
+  if(saldo_inicial>0){ suma_ars+=saldo_inicial; suma_usd+=saldo_inicial/(snapAnt?.usd_mep_cierre||usd_mep_actual); }
+  movs_periodo.forEach(m=>{
+    const imp=parseFloat(m.importe_ars)||0;
+    const mep_m=parseFloat(m.usd_mep)||usd_mep_actual;
+    if(m.aporte_capital&&imp>0){ suma_ars+=imp; suma_usd+=imp/mep_m; }
+    else if(m.tipo==='deposito'&&!m.aporte_capital&&imp>0){ suma_ars+=imp; suma_usd+=imp/mep_m; }
+  });
+  const mep_entrada_prom=suma_usd>0?suma_ars/suma_usd:usd_mep_actual;
+  const capital_invertido_usd=suma_usd;
+
+  // Cartera y tablas
+  const cartera=buildCartera(fondoId);
+  const tablaARS=[], tablaUSD=[];
+
+  cartera.forEach(pos=>{
+    const pa=getPrecioActual(pos.activo);
+    const rfFactor=pos.instrumento==='renta_fija'?100:1;
+    if(pos.es_futuro){
+      const esCort=pos.contratos_vendidos>0.0001;
+      const esLarg=pos.contratos_comprados>0.0001;
+      if(!esCort&&!esLarg) return;
+      const contratos=esCort?pos.contratos_vendidos:pos.contratos_comprados;
+      const {precioCierreAnt}=getPPCMensual(fondoId, pos.activo, pos.instrumento);
+      const ppc_fut=esCort?(precioCierreAnt??pos.precio_venta_promedio):(precioCierreAnt??pos.precio_compra_promedio);
+      let res_ars=null;
+      if(pa!=null){ const delta=esCort?rp(ppc_fut-pa):rp(pa-ppc_fut); res_ars=r2(delta*contratos*100); }
+      const res_usd=res_ars!=null&&usd_mep_actual>0?r2(res_ars/usd_mep_actual):null;
+      tablaARS.push({activo:pos.activo, instrumento:pos.instrumento, es_futuro:true, cantDisplay:contratos, ppc:ppc_fut, cim:null, pa, ca:null, resultado:res_ars, varPct:null, participacion:null});
+      tablaUSD.push({activo:pos.activo, instrumento:pos.instrumento, es_futuro:true, cantDisplay:contratos, ppcUSD:null, cim:null, spotUSD:null, ca:null, resultado:res_usd, varPct:null});
+    } else {
+      const {ppc_mensual}=getPPCMensual(fondoId, pos.activo, pos.instrumento);
+      const ppc_ars=rp(ppc_mensual??pos.precio_promedio);
+      const effQty=rp(pos.cantidad/rfFactor);
+      const cim_ars=r2(effQty*ppc_ars);
+      const {precio:pa_val, estado:estado_precio}=getPrecioValuacion(pos.activo, ppc_ars);
+      const ca_ars=pa_val!=null?r2(effQty*pa_val):null;
+      const res_ars=ca_ars!=null?r2(ca_ars-cim_ars):null;
+      const varPct_ars=res_ars!=null&&cim_ars!==0?r2(res_ars/cim_ars*100):null;
+      const ppc_usd=mep_inicio>0?rp(ppc_ars/mep_inicio):null;
+      const spot_usd=pa_val!=null&&usd_mep_actual>0?rp(pa_val/usd_mep_actual):null;
+      const cim_usd=ppc_usd!=null?r2(effQty*ppc_usd):null;
+      const ca_usd=spot_usd!=null?r2(effQty*spot_usd):null;
+      const res_usd=ca_usd!=null&&cim_usd!=null?r2(ca_usd-cim_usd):null;
+      const varPct_usd=res_usd!=null&&cim_usd!=null&&cim_usd!==0?r2(res_usd/cim_usd*100):null;
+      tablaARS.push({activo:pos.activo, instrumento:pos.instrumento, es_futuro:false, cantDisplay:pos.cantidad, ppc:ppc_ars, cim:cim_ars, pa:pa_val, pa_vigente:pa, estado_precio, ca:ca_ars, resultado:res_ars, varPct:varPct_ars, participacion:null});
+      tablaUSD.push({activo:pos.activo, instrumento:pos.instrumento, es_futuro:false, cantDisplay:pos.cantidad, ppcUSD:ppc_usd, cim:cim_usd, spotUSD:spot_usd, ca:ca_usd, resultado:res_usd, varPct:varPct_usd, estado_precio});
+    }
+  });
+
+  const tot_ca_pre=tablaARS.filter(r=>r.ca!=null).reduce((s,r)=>s+Math.abs(r.ca),0);
+  tablaARS.forEach(r=>{ r.participacion=tot_ca_pre>0&&r.ca!=null?r2(Math.abs(r.ca)/tot_ca_pre*100):null; });
+  tablaUSD.forEach((r,i)=>{ r.participacion=tablaARS[i]?.participacion??null; });
+
+  const totARS={
+    cim: r2(tablaARS.filter(r=>r.cim!=null).reduce((s,r)=>s+r.cim,0)),
+    ca:  r2(tablaARS.filter(r=>r.ca!=null).reduce((s,r)=>s+r.ca,0)),
+    resultado: r2(tablaARS.filter(r=>r.resultado!=null).reduce((s,r)=>s+r.resultado,0))
+  };
+  const totUSD={
+    cim: r2(tablaUSD.filter(r=>r.cim!=null).reduce((s,r)=>s+r.cim,0)),
+    ca:  r2(tablaUSD.filter(r=>r.ca!=null).reduce((s,r)=>s+r.ca,0)),
+    resultado: r2(tablaUSD.filter(r=>r.resultado!=null).reduce((s,r)=>s+r.resultado,0))
+  };
+
+  const patrimonio=r2(totARS.ca+liquidez);
+  const liquidez_usd=usd_mep_actual>0?r2(liquidez/usd_mep_actual):0;
+  const ca_usd_tot=r2(totUSD.ca+liquidez_usd);
+
+  // compatibilidad interna
+  const cim_total=totARS.cim, ca_total=totARS.ca;
+  const liquidez_inicial_usd=mep_inicio>0?r2(liquidez_inicial/mep_inicio):0;
+  const cim_ampliado_ars=r2(totARS.cim+liquidez_inicial);
+  const cim_ampliado_usd=r2(totUSD.cim+liquidez_inicial_usd);
+  const cim_usd_tot=cim_ampliado_usd;
+  const patrimonio_usd=usd_mep_actual>0?r2(patrimonio/usd_mep_actual):0;
+
+  return {
+    mep_inicio, mep_actual:usd_mep_actual, saldo_inicial, snapAnt,
+    movs_periodo, cartera,
+    liquidez, liquidez_usd, liquidez_inicial, liquidez_inicial_usd,
+    aportes, aportes_implicitos, retiros, renta_cobrada,
+    capital_invertido, capital_invertido_usd, mep_entrada_prom,
+    tablaARS, tablaUSD, totARS, totUSD,
+    patrimonio, patrimonio_usd, ca_usd_tot,
+    cim_total, ca_total, cim_ampliado_ars, cim_ampliado_usd, cim_usd_tot
+  };
+}
+
+// ============================================================
+// buildCapitalBase(fondoId, pos)
+// Base inicial + compras sin liquidez - retiros sobre ganancia.
+// transfer_in sube base, transfer_out baja base (efecto neto 0 en consolidado).
+// aporte_implicito no es driver contable — solo actualiza liquidez interna.
+// Sin fallback a patrimonio actual — si no hay cierre ni override, base = null.
+// ============================================================
+function buildCapitalBase(fondoId, pos){
+  const { snapAnt, movs_periodo, mep_actual:usd_mep_actual } = pos;
+
+  // Prioridad: 1) override manual 2) cierre anterior 3) null (sin base definida)
+  const _cbKey=`${fondoId}_${db.periodo.anio}_${db.periodo.mes}`;
+  const _cbOverride=db.config.capital_base_manual?.[_cbKey];
+  const cb_inicial_ars = snapAnt?.patrimonio_cierre_ars ?? snapAnt?.patrimonio_ars ?? null;
+  const cb_inicial_usd = snapAnt?.patrimonio_cierre_usd ?? snapAnt?.patrimonio_usd ?? null;
+
+  // Sin override ni cierre previo: base indefinida
+  if(!_cbOverride && cb_inicial_ars === null) return { capital_base_ars: null, capital_base_usd: null };
+
+  // Override = base inicial del período; desde ahí corre el loop normal
+  let cb_ars = _cbOverride ? r2(_cbOverride.ars) : cb_inicial_ars;
+  let cb_usd = _cbOverride ? r2(_cbOverride.usd) : (cb_inicial_usd ?? 0);
+  let liq_cb = snapAnt ? (snapAnt.liquidez_ars ?? snapAnt.liquidez_final ?? 0) : 0;
+  let gan_ars = 0, gan_usd = 0;
+
+  // costoVivo para calcular ganancia realizada en ventas (PPP inline)
+  const costoVivo = {};
+  db.movimientos.filter(m =>
+    m.fondo_id===fondoId &&
+    !(m.periodo_mes===db.periodo.mes && m.periodo_anio===db.periodo.anio)
+  ).forEach(m => {
+    if(!m.activo) return;
+    const key=m.activo.trim().toUpperCase();
+    const imp=parseFloat(m.importe_ars)||0, cant=parseFloat(m.cantidad)||0;
+    if(!costoVivo[key]) costoVivo[key]={cantidad:0,costo_total:0};
+    const cv=costoVivo[key];
+    if(['compra','opcion_call','opcion_put'].includes(m.tipo)){ cv.cantidad+=cant; cv.costo_total+=imp; }
+    else if(m.tipo==='venta'||m.tipo==='transfer_out'){ const p=cv.cantidad>0?cant/cv.cantidad:0; cv.costo_total-=cv.costo_total*p; cv.cantidad-=cant; if(cv.cantidad<0.0001){cv.cantidad=0;cv.costo_total=0;} }
+    else if(m.tipo==='transfer_in'){ cv.cantidad+=cant; cv.costo_total+=imp; }
+  });
+
+  movs_periodo.forEach(m => {
+    const imp=parseFloat(m.importe_ars)||0;
+    const mep_m=parseFloat(m.usd_mep)||usd_mep_actual;
+
+    // aporte_implicito: solo liquidez, no es driver contable
+    if(m.origen==='aporte_implicito'){ liq_cb+=imp; return; }
+
+    if(m.tipo==='deposito'){ liq_cb+=imp; return; }
+
+    if(['compra','opcion_call','opcion_put'].includes(m.tipo)){
+      const liq_pre=Math.max(0,liq_cb);
+      const exc=Math.max(0,imp-liq_pre);
+      cb_ars+=exc; cb_usd+=exc/mep_m;
+      liq_cb=Math.max(0,liq_cb-imp);
+      if(m.activo){
+        const key=m.activo.trim().toUpperCase(), cant=parseFloat(m.cantidad)||0;
+        if(!costoVivo[key]) costoVivo[key]={cantidad:0,costo_total:0};
+        costoVivo[key].cantidad+=cant; costoVivo[key].costo_total+=imp;
+      }
+      return;
+    }
+
+    if(m.tipo==='venta'){
+      liq_cb+=imp;
+      if(m.activo){
+        const key=m.activo.trim().toUpperCase(), cant=parseFloat(m.cantidad)||0;
+        const cv=costoVivo[key];
+        if(cv&&cv.cantidad>0.0001){
+          const prop=Math.min(cant/cv.cantidad,1);
+          const costo=cv.costo_total*prop;
+          const gan=imp-costo;
+          cv.costo_total-=costo; cv.cantidad-=cant;
+          if(cv.cantidad<0.0001){cv.cantidad=0;cv.costo_total=0;}
+          gan_ars=Math.max(0,gan_ars+gan);
+          gan_usd=Math.max(0,gan_usd+gan/mep_m);
+        }
+      }
+      return;
+    }
+
+    if(m.tipo==='transfer_out'){
+      // Baja capital base por el CIM proporcional transferido
+      if(m.activo){
+        const key=m.activo.trim().toUpperCase(), cant=parseFloat(m.cantidad)||0;
+        const cv=costoVivo[key];
+        if(cv&&cv.cantidad>0.0001){
+          const prop=Math.min(cant/cv.cantidad,1);
+          const costo=cv.costo_total*prop;
+          cb_ars=Math.max(0,cb_ars-costo);
+          cb_usd=Math.max(0,cb_usd-costo/mep_m);
+          cv.costo_total-=costo; cv.cantidad-=cant;
+          if(cv.cantidad<0.0001){cv.cantidad=0;cv.costo_total=0;}
+        }
+      }
+      return;
+    }
+
+    if(m.tipo==='transfer_in'){
+      // Sube capital base por el CIM recibido (importe_ars = CIM transferido)
+      cb_ars+=imp; cb_usd+=imp/mep_m;
+      if(m.activo){
+        const key=m.activo.trim().toUpperCase(), cant=parseFloat(m.cantidad)||0;
+        if(!costoVivo[key]) costoVivo[key]={cantidad:0,costo_total:0};
+        costoVivo[key].cantidad+=cant; costoVivo[key].costo_total+=imp;
+      }
+      return;
+    }
+
+    if(['renta','dividendo'].includes(m.tipo)){
+      liq_cb+=imp; gan_ars+=imp; gan_usd+=imp/mep_m;
+      return;
+    }
+
+    if(m.tipo==='retiro'){
+      liq_cb-=imp;
+      const cons_ars=Math.min(gan_ars,imp);
+      gan_ars=Math.max(0,gan_ars-cons_ars);
+      cb_ars=Math.max(0,cb_ars-(imp-cons_ars));
+      const imp_usd=imp/mep_m;
+      const cons_usd=Math.min(gan_usd,imp_usd);
+      gan_usd=Math.max(0,gan_usd-cons_usd);
+      cb_usd=Math.max(0,cb_usd-(imp_usd-cons_usd));
+      return;
+    }
+    // futuros: sin impacto
+  });
+
+  return { capital_base_ars: r2(cb_ars), capital_base_usd: r2(cb_usd) };
+}
+
+// ============================================================
+// buildResumenFondo(fondoId)
+// Orquesta las 3 funciones. Resultado = patrimonio - capital_base.
+// Si capital_base es null (sin cierre previo), resultado = null.
+// ============================================================
+function buildResumenFondo(fondoId){
+  const pos = buildPosicionesPatrimonio(fondoId);
+  const base = buildCapitalBase(fondoId, pos);
+  const capital_base_ars = base.capital_base_ars;
+  const capital_base_usd = base.capital_base_usd;
+  const resultado_mensual_ars = capital_base_ars != null ? r2(pos.patrimonio - capital_base_ars) : null;
+  const resultado_mensual_pct = capital_base_ars > 0 && resultado_mensual_ars != null ? r2(resultado_mensual_ars/capital_base_ars*100) : null;
+  const resultado_mensual_usd = capital_base_usd != null ? r2(pos.ca_usd_tot - capital_base_usd) : null;
+  const resultado_mensual_usd_pct = capital_base_usd > 0 && resultado_mensual_usd != null ? r2(resultado_mensual_usd/capital_base_usd*100) : null;
+  const tem = pos.capital_invertido > 0 && resultado_mensual_ars != null ? r2(resultado_mensual_ars/pos.capital_invertido*100) : 0;
+  return {
+    ...pos,
+    capital_base_ars, capital_base_usd,
+    resultado_mensual_ars, resultado_mensual_pct,
+    resultado_mensual_usd, resultado_mensual_usd_pct,
+    tem,
+    movs: pos.movs_periodo
+  };
+}
+
+// Wrapper de compatibilidad — todos los llamadores existentes siguen funcionando
+function buildFromMovimientos(fondoId){
+  return buildResumenFondo(fondoId);
+}
+
+// ============================================================
+// buildDashboard() — agrega fondos para dashboard
+// Tarjetas del dashboard SOLO leen de la tabla de fondos
+// ============================================================
+function buildDashboard(){
+  const usd_mep=db.config.usd_mep_default||1399;
+  const filas=[];
+  fondosOrdenados().forEach((f,i)=>{
+    const d=buildFromMovimientos(f.id);
+    const color=getFondoColor(parseInt(f.color)||i);
+    // Capital Base (inicio de mes) desde cierre anterior
+    const cim_ars=d.capital_base_ars;
+    const ca_ars=r2(d.patrimonio);
+    const res_ars=d.resultado_mensual_ars;
+    const var_pct=cim_ars>0?r2(res_ars/cim_ars*100):null;
+    // Fila USD
+    const cim_usd=d.capital_base_usd;
+    const ca_usd=d.ca_usd_tot;
+    const res_usd=d.resultado_mensual_usd;
+    const var_usd_pct=cim_usd>0?r2(res_usd/cim_usd*100):null;
+    filas.push({f, d, color,
+      ars:{cim:cim_ars, ca:ca_ars, resultado:res_ars, varPct:var_pct, patrimonio:r2(d.patrimonio)},
+      usd:{cim:cim_usd, ca:ca_usd, resultado:res_usd, varPct:var_usd_pct, patrimonio:r2(d.ca_usd_tot)}
+    });
+  });
+  // Totales = suma de filas redondeadas (NUNCA recalcular)
+  const tot={
+    ars:{
+      cim:  r2(filas.reduce((s,f)=>s+f.ars.cim,0)),
+      ca:   r2(filas.reduce((s,f)=>s+f.ars.patrimonio,0)),   // patrimonio real (spot+futuros+liq)
+      resultado: r2(filas.reduce((s,f)=>s+f.ars.resultado,0)),
+      liquidez:  r2(filas.reduce((s,f)=>s+f.d.liquidez,0)),
+      aportes:   r2(filas.reduce((s,f)=>s+f.d.aportes,0)),
+      retiros:   r2(filas.reduce((s,f)=>s+f.d.retiros,0)),
+    },
+    usd:{
+      cim: r2(filas.reduce((s,f)=>s+f.usd.cim,0)),
+      ca:  r2(filas.reduce((s,f)=>s+f.usd.patrimonio,0)),    // patrimonio real en USD
+      resultado: r2(filas.reduce((s,f)=>s+f.usd.resultado,0)),
+    }
+  };
+  tot.ars.varPct=tot.ars.cim>0?r2(tot.ars.resultado/tot.ars.cim*100):null;
+  tot.usd.varPct=tot.usd.cim>0?r2(tot.usd.resultado/tot.usd.cim*100):null;
+  return {filas, tot, usd_mep};
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function navigate(page, fondoId=null){
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+  const navEl=document.querySelector(`[data-page="${page}"]`);
+  if(navEl) navEl.classList.add('active');
+  document.querySelectorAll('#main > div').forEach(el=>el.classList.add('hidden'));
+  if(page==='fondo'&&fondoId){
+    currentPage='fondo'; currentFondoId=fondoId;
+    renderFondoDetail(fondoId);
+    document.getElementById('page-fondo').classList.remove('hidden');
+    document.querySelectorAll('.fund-nav-item').forEach(el=>el.classList.remove('active'));
+    document.querySelector(`[data-fondo-id="${fondoId}"]`)?.classList.add('active');
+  } else {
+    currentPage=page; currentFondoId=null;
+    document.getElementById(`page-${page}`).classList.remove('hidden');
+    if(page==='dashboard') renderDashboard();
+    else if(page==='movimientos') renderMovimientos();
+    else if(page==='precios-spot') renderPreciosSpot();
+    else if(page==='cierres') renderCierres();
+    else if(page==='anual') renderAnual();
+    else if(page==='notas') renderNotas();
+  }
+}
+
+// ============================================================
+// SIDEBAR
+// ============================================================
+function renderSidebar(){
+  document.getElementById('sidebar-period').innerHTML=`Período: <strong>${periodoLabel(db.periodo)}</strong>`;
+  const container=document.getElementById('sidebar-funds');
+  container.innerHTML='';
+  let dragSrc=null;
+  fondosOrdenados().forEach((f,i)=>{
+    const el=document.createElement('div');
+    el.className='fund-nav-item';
+    el.dataset.fondoId=f.id;
+    el.draggable=true;
+    const color=getFondoColor(parseInt(f.color)||i);
+    el.innerHTML=`<span class="fund-drag-handle" title="Reordenar">⠿</span><div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></div><div style="flex:1"><div>${f.nombre}</div>${f.descripcion?`<div style="font-size:10px;color:var(--text3);margin-top:1px">${f.descripcion}</div>`:''}</div>`;
+    el.onclick=(e)=>{ if(!e.target.classList.contains('fund-drag-handle')) navigate('fondo',f.id); };
+    el.addEventListener('dragstart',e=>{ dragSrc=el; el.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; });
+    el.addEventListener('dragend',()=>{ el.classList.remove('dragging'); container.querySelectorAll('.fund-nav-item').forEach(n=>n.classList.remove('drag-over')); });
+    el.addEventListener('dragover',e=>{ e.preventDefault(); if(dragSrc&&dragSrc!==el){ container.querySelectorAll('.fund-nav-item').forEach(n=>n.classList.remove('drag-over')); el.classList.add('drag-over'); }});
+    el.addEventListener('dragleave',()=>el.classList.remove('drag-over'));
+    el.addEventListener('drop',e=>{
+      e.preventDefault(); if(!dragSrc||dragSrc===el) return;
+      const items=[...container.querySelectorAll('.fund-nav-item')];
+      const fromIdx=items.indexOf(dragSrc); const toIdx=items.indexOf(el);
+      const orderedIds=items.map(n=>n.dataset.fondoId);
+      orderedIds.splice(fromIdx,1); orderedIds.splice(toIdx,0,dragSrc.dataset.fondoId);
+      orderedIds.forEach((id,idx)=>{ const fondo=db.fondos.find(f=>f.id===id); if(fondo) fondo.orden=idx; });
+      saveDB(); renderSidebar(); if(currentPage==='dashboard') renderDashboard();
+    });
+    if(currentFondoId===f.id) el.classList.add('active');
+    container.appendChild(el);
+  });
+}
+
+// ============================================================
+// DASHBOARD — tarjetas leen SOLO de tabla de fondos
+// ============================================================
+function renderDashboard(){
+  const {filas, tot, usd_mep}=buildDashboard();
+  const page=document.getElementById('page-dashboard');
+  let fondsRows='', fondsRowsUSD='';
+  const maxResARS=Math.max(...filas.map(f=>Math.abs(f.ars.resultado)),1);
+  const maxResUSD=Math.max(...filas.map(f=>Math.abs(f.usd.resultado)),0.01);
+
+  filas.forEach(({f, d, color, ars, usd})=>{
+    const barPct=Math.min(Math.abs(ars.resultado)/maxResARS*100,100);
+    fondsRows+=`<tr>
+      <td class="td-main" style="cursor:pointer" onclick="navigate('fondo','${f.id}')">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:7px;height:7px;border-radius:50%;background:${color}"></div>
+          <div>${f.nombre}${f.descripcion?`<div style="font-size:10px;color:var(--text3);font-weight:400">${f.descripcion}</div>`:''}</div>
+        </div>
+      </td>
+      <td class="td-num">${fmt(ars.cim,2)}</td>
+      <td class="td-num">${fmt(ars.patrimonio,2)}</td>
+      <td class="td-num ${colorClass(ars.resultado)}">${fmt(ars.resultado,2)}</td>
+      <td class="${colorClass(ars.varPct)}"><span class="badge ${badgeClass(ars.varPct)}">${ars.varPct!=null?fmtPct(ars.varPct):'—'}</span></td>
+      <td><div style="width:70px;height:12px;background:var(--bg4);border-radius:3px;overflow:hidden"><div style="width:${barPct}%;height:100%;background:${ars.resultado>=0?'var(--green)':'var(--red)'};border-radius:3px"></div></div></td>
+      <td><span class="badge badge-gray">${d.movs.length}</span></td>
+    </tr>`;
+    const barPctU=Math.min(Math.abs(usd.resultado)/maxResUSD*100,100);
+    fondsRowsUSD+=`<tr>
+      <td class="td-main" style="cursor:pointer" onclick="navigate('fondo','${f.id}')">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:7px;height:7px;border-radius:50%;background:${color}"></div>
+          <div>${f.nombre}${f.descripcion?`<div style="font-size:10px;color:var(--text3);font-weight:400">${f.descripcion}</div>`:''}</div>
+        </div>
+      </td>
+      <td class="td-num">${fmt(usd.cim,2)}</td>
+      <td class="td-num">${fmt(usd.patrimonio,2)}</td>
+      <td class="td-num ${colorClass(usd.resultado)}">${fmt(usd.resultado,2)}</td>
+      <td class="${colorClass(usd.varPct)}"><span class="badge ${badgeClass(usd.varPct)}">${usd.varPct!=null?fmtPct(usd.varPct):'—'}</span></td>
+      <td><div style="width:70px;height:12px;background:var(--bg4);border-radius:3px;overflow:hidden"><div style="width:${barPctU}%;height:100%;background:${usd.resultado>=0?'var(--green)':'var(--red)'};border-radius:3px"></div></div></td>
+      <td><span class="badge badge-gray">${d.movs.length}</span></td>
+    </tr>`;
+  });
+  if(!fondsRows) fondsRows=`<tr><td colspan="7"><div class="empty-state"><div class="icon">◈</div><p>No hay fondos.</p></div></td></tr>`;
+
+  const fondsTotalRow=filas.length>0?`<tr class="cartera-total-row">
+    <td class="td-main">TOTAL</td>
+    <td class="td-num">${fmt(tot.ars.cim,2)}</td>
+    <td class="td-num">${fmt(tot.ars.ca,2)}</td>
+    <td class="td-num ${colorClass(tot.ars.resultado)}">${fmt(tot.ars.resultado,2)}</td>
+    <td></td><td></td>
+    <td><span class="badge badge-gray">${filas.reduce((s,f)=>s+f.d.movs.length,0)}</span></td>
+  </tr>`:'';
+  const fondsTotalRowUSD=filas.length>0?`<tr class="cartera-total-row">
+    <td class="td-main">TOTAL</td>
+    <td class="td-num">${fmt(tot.usd.cim,2)}</td>
+    <td class="td-num">${fmt(tot.usd.ca,2)}</td>
+    <td class="td-num ${colorClass(tot.usd.resultado)}">${fmt(tot.usd.resultado,2)}</td>
+    <td></td><td></td>
+    <td><span class="badge badge-gray">${filas.reduce((s,f)=>s+f.d.movs.length,0)}</span></td>
+  </tr>`:'';
+
+  // Tarjetas leen SOLO de totales de tabla
+  page.innerHTML=`
+    <div class="page-header flex-between">
+      <div><div class="page-title">Dashboard</div><div class="page-subtitle">${periodoLabel(db.periodo)} · Consolidado</div></div>
+      <div class="flex-gap">
+        <button class="btn btn-secondary btn-sm" onclick="openConfigUSD()">USD MEP: ${fmt(usd_mep,2)}</button>
+        <button class="btn btn-secondary btn-sm" onclick="navigate('precios-spot')">Precios Spot</button>
+        <button class="btn btn-primary btn-sm" onclick="openModal('modal-cierre');buildCierrePreview()">Cierre mensual</button>
+      </div>
+    </div>
+    <div class="cards-row" style="grid-template-columns:repeat(4,1fr)">
+      <div class="card" style="border-color:var(--border2)">
+        <div class="card-label">Capital Base</div>
+        <div class="card-value">${tot.ars.cim>0?fmtARS(tot.ars.cim):'—'}</div>
+        <div class="card-sub" style="font-size:12px;margin-top:3px">${tot.usd.cim>0?fmtUSD(tot.usd.cim):'—'}</div>
+        <div class="card-sub" style="font-size:10px;color:var(--text3);margin-top:2px">Inicio de mes</div>
+      </div>
+      <div class="card" style="border-color:var(--border2)">
+        <div class="card-label">Patrimonio actual $</div>
+        <div class="card-value">${fmtARS(tot.ars.ca)}</div>
+        <div class="card-sub">${fmtUSD(tot.usd.ca)}</div>
+      </div>
+      <div class="card" style="border-color:var(--border2)">
+        <div class="card-label">Resultado en pesos <span style="color:var(--text3);font-weight:400">(Mensual)</span></div>
+        <div class="card-value ${colorClass(tot.ars.varPct)}" style="font-size:22px">${tot.ars.varPct!=null?fmtPct(tot.ars.varPct):'—'}</div>
+        <div class="card-sub ${colorClass(tot.ars.resultado)}" style="font-size:13px;margin-top:5px;font-weight:600">${fmtARS(tot.ars.resultado)}</div>
+      </div>
+      <div class="card" style="border-color:var(--border2)">
+        <div class="card-label">Resultado en dólares MEP <span style="color:var(--text3);font-weight:400">(Mensual)</span></div>
+        <div class="card-value ${colorClass(tot.usd.varPct)}" style="font-size:22px">${tot.usd.varPct!=null?fmtPct(tot.usd.varPct):'—'}</div>
+        <div class="card-sub ${colorClass(tot.usd.resultado)}" style="font-size:13px;margin-top:5px;font-weight:600">${fmtUSD(tot.usd.resultado)}</div>
+      </div>
+    </div>
+    <div class="cards-row" style="grid-template-columns:repeat(4,1fr);margin-top:-6px">
+      <div class="card" style="background:var(--bg3);border-color:var(--border)">
+        <div class="card-label" style="font-size:9px">MEP actual</div>
+        <div class="card-value" style="font-size:15px;color:var(--yellow)">${fmt(usd_mep,2)}</div>
+      </div>
+      <div class="card" style="background:var(--bg3);border-color:var(--border)">
+        <div class="card-label" style="font-size:9px">Liquidez disponible</div>
+        <div class="card-value blue" style="font-size:15px">${fmtARS(tot.ars.liquidez)}</div>
+        <div class="card-sub">${fmtUSD(r2(tot.ars.liquidez/(usd_mep||1)))}</div>
+      </div>
+      <div class="card" style="background:var(--bg3);border-color:var(--border)">
+        <div class="card-label" style="font-size:9px">Aportes del período</div>
+        <div class="card-value green" style="font-size:15px">${fmtARS(tot.ars.aportes)}</div>
+      </div>
+      <div class="card" style="background:var(--bg3);border-color:var(--border)">
+        <div class="card-label" style="font-size:9px">Retiros del período</div>
+        <div class="card-value red" style="font-size:15px">${fmtARS(tot.ars.retiros)}</div>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <div class="table-head"><div class="table-title">Fondos $</div></div>
+      <div class="table-scroll"><table class="fondos-table" style="width:100%;table-layout:fixed;font-size:11px">
+        <colgroup><col style="width:200px"><col style="width:160px"><col style="width:160px"><col style="width:140px"><col style="width:80px"><col style="width:90px"><col style="width:50px"></colgroup>
+        <thead><tr><th>Fondo</th><th style="text-align:right">Capital Base $</th><th style="text-align:right">Capital Actual $</th><th style="text-align:right">Resultado $</th><th>Var $</th><th>Barra</th><th>Movs</th></tr></thead>
+        <tbody>${fondsRows}${fondsTotalRow}</tbody>
+      </table></div>
+    </div>
+    <div class="table-wrap">
+      <div class="table-head"><div class="table-title">Fondos U$S</div></div>
+      <div class="table-scroll"><table class="fondos-table" style="width:100%;table-layout:fixed;font-size:11px">
+        <colgroup><col style="width:200px"><col style="width:160px"><col style="width:160px"><col style="width:140px"><col style="width:80px"><col style="width:90px"><col style="width:50px"></colgroup>
+        <thead><tr><th>Fondo</th><th style="text-align:right">Capital Base U$S</th><th style="text-align:right">Capital Actual U$S</th><th style="text-align:right">Resultado U$S</th><th>Var U$S</th><th>Barra</th><th>Movs</th></tr></thead>
+        <tbody>${fondsRowsUSD}${fondsTotalRowUSD}</tbody>
+      </table></div>
+    </div>`;
+}
+
+// ============================================================
+// FONDO DETAIL — tarjetas leen SOLO de tablas de cartera
+// ============================================================
+function sortCarteraBy(col){
+  if(cartSort.col===col) cartSort.asc=!cartSort.asc;
+  else{ cartSort.col=col; cartSort.asc=true; }
+  if(currentFondoId) renderFondoDetail(currentFondoId);
+}
+
+function renderFondoDetail(fondoId){
+  const fondo=db.fondos.find(f=>f.id===fondoId); if(!fondo) return;
+  const page=document.getElementById('page-fondo');
+  const d=buildFromMovimientos(fondoId);
+  const color=getFondoColor(parseInt(fondo.color));
+  const {tablaARS, tablaUSD, totARS, totUSD}=d;
+
+  // Sort
+  let tARS=[...tablaARS]; let tUSD=[...tablaUSD];
+  if(cartSort.col){
+    const getVal=(r,col)=>{
+      if(col==='activo') return r.activo||'';
+      if(col==='cantidad') return r.cantDisplay??0;
+      if(col==='ppc') return r.ppc??0;
+      if(col==='cim') return r.cim??0;
+      if(col==='ca') return r.ca??0;
+      if(col==='resultado') return r.resultado??0;
+      if(col==='varPct') return r.varPct??0;
+      if(col==='participacion') return r.participacion??0;
+      return 0;
+    };
+    const cmp=(a,b)=>{
+      const va=getVal(a,cartSort.col), vb=getVal(b,cartSort.col);
+      if(typeof va==='string') return cartSort.asc?va.localeCompare(vb):vb.localeCompare(va);
+      return cartSort.asc?va-vb:vb-va;
+    };
+    // sort both arrays by same index
+    const indices=[...Array(tARS.length).keys()].sort((i,j)=>cmp(tARS[i],tARS[j]));
+    tARS=indices.map(i=>tARS[i]);
+    tUSD=indices.map(i=>tUSD[i]);
+  }
+
+  // Build ARS rows
+  let cartRowsARS='', cartRowsUSD='';
+  tARS.forEach((r,i)=>{
+    const u=tUSD[i];
+    const pa=r.pa;
+    const rfLabel=r.instrumento==='renta_fija'?'RF':'';
+    const caDisp=r.es_futuro
+      ?'<span style="color:var(--text3)">—</span>'
+      :(r.ca!=null?fmt(r.ca,2):'—');
+    const mkWarn=(pct,esFut)=>{if(pct==null||esFut)return'—';if(pct>=10)return'<span style="font-size:14px;color:#FFD700;filter:drop-shadow(0 0 6px #FFD700)">⚠</span>';if(pct>=5)return'<span style="font-size:13px;color:#FFE87C;opacity:0.75">⚠</span>';return'—';};
+    const warn=mkWarn(r.varPct,r.es_futuro);
+    const warnUSD=mkWarn(u.varPct,u.es_futuro);
+    cartRowsARS+=`<tr>
+      <td style="font-weight:700;color:var(--accent)">${r.activo}</td>
+      <td style="text-align:center">${instrBadge(r.instrumento)}</td>
+      <td class="td-num">${fmt(r.cantDisplay,r.instrumento==='renta_fija'?2:0)}</td>
+      <td class="td-num">${fmt(r.ppc,2)}</td>
+      <td class="td-num">${r.pa_vigente!=null?fmt(r.pa_vigente,2)+' '+badgePrecioEstado(r.estado_precio):r.estado_precio==='estimado_compra'?'<span style="color:var(--text3);font-size:10px">~PPC '+badgePrecioEstado(r.estado_precio)+'</span>':'<span class="text-muted">—</span>'}</td>
+      <td class="td-num" style="${r.es_futuro?'color:var(--text3);font-style:italic':''}">${caDisp}</td>
+      <td class="td-num ${colorClass(r.resultado)}">${r.resultado!=null?fmt(r.resultado,2):'—'}</td>
+      <td class="td-num ${colorClass(r.varPct)}">${r.varPct!=null?fmtPct(r.varPct):'—'}</td>
+      <td class="td-num">${r.participacion!=null?fmt(r.participacion,1)+'%':'—'}</td>
+      <td style="text-align:center">${warn}</td>
+    </tr>`;
+    const caUSDdisp=u.ca!=null?fmt(u.ca,2):'—';
+    cartRowsUSD+=`<tr>
+      <td style="font-weight:700;color:var(--accent)">${u.activo}</td>
+      <td style="text-align:center">${instrBadge(r.instrumento)}</td>
+      <td class="td-num">${fmt(u.cantDisplay,r.instrumento==='renta_fija'?2:0)}</td>
+      <td class="td-num">${u.ppcUSD!=null?fmt(u.ppcUSD,3):'—'}</td>
+      <td class="td-num">${u.spotUSD!=null?fmt(u.spotUSD,3):'—'}</td>
+      <td class="td-num" style="${u.es_futuro?'color:var(--text3);font-style:italic':''}">${caUSDdisp}</td>
+      <td class="td-num ${colorClass(u.resultado)}">${u.resultado!=null?fmt(u.resultado,2):'—'}</td>
+      <td class="td-num ${colorClass(u.varPct)}">${u.varPct!=null?fmtPct(u.varPct):'—'}</td>
+      <td class="td-num">${u.participacion!=null?fmt(u.participacion,1)+'%':'—'}</td>
+      <td style="text-align:center">${warnUSD}</td>
+    </tr>`;
+  });
+
+  // — FILA LIQUIDEZ en tabla ARS y USD —
+  const liq_cim_ars = d.liquidez_inicial;
+  const liq_ca_ars  = Math.max(0, d.liquidez);
+  const liq_res_ars = Math.max(0, r2(liq_ca_ars - liq_cim_ars));
+  const liq_cim_usd = d.mep_inicio>0 ? r2(liq_cim_ars/d.mep_inicio) : 0;
+  const liq_ca_usd  = Math.max(0, d.liquidez_usd ?? (d.mep_actual>0 ? r2(liq_ca_ars/d.mep_actual) : 0));
+  const liq_res_usd = Math.max(0, r2(liq_ca_usd - liq_cim_usd));
+  const liqRowARS = `<tr>
+    <td style="font-weight:700;color:#9B59B6">Liquidez</td>
+    <td style="text-align:center"><span class="badge" style="background:var(--blue-bg);color:var(--blue);font-size:9px">LIQ</span></td>
+    <td></td><td></td>
+    <td></td>
+    <td class="td-num">${fmt(liq_ca_ars,2)}</td>
+    <td class="td-num ${colorClass(liq_res_ars)}">${fmt(liq_res_ars,2)}</td>
+    <td></td><td></td><td></td>
+  </tr>`;
+  const liqRowUSD = `<tr>
+    <td style="font-weight:700;color:#9B59B6">Liquidez</td>
+    <td style="text-align:center"><span class="badge" style="background:var(--blue-bg);color:var(--blue);font-size:9px">LIQ</span></td>
+    <td></td><td></td>
+    <td></td>
+    <td class="td-num">${fmt(liq_ca_usd,2)}</td>
+    <td class="td-num ${colorClass(liq_res_usd)}">${fmt(liq_res_usd,2)}</td>
+    <td></td><td></td><td></td>
+  </tr>`;
+  // Totales con liquidez incluida (CIM liquidez = 0, no se suma)
+  const totARS_liq={ cim:r2(totARS.cim), ca:r2(totARS.ca+liq_ca_ars), resultado:r2(totARS.resultado+liq_res_ars) };
+  const totUSD_liq={ cim:r2(totUSD.cim), ca:r2(totUSD.ca+liq_ca_usd), resultado:r2(totUSD.resultado+liq_res_usd) };
+
+  const totalRowARS=tARS.length>0?`<tr class="cartera-total-row">
+    <td>TOTAL</td><td></td>
+    <td></td><td></td>
+    <td></td>
+    <td class="td-num">${fmt(totARS_liq.ca,2)}</td>
+    <td class="td-num ${colorClass(totARS_liq.resultado)}">${fmt(totARS_liq.resultado,2)}</td>
+    <td></td><td class="td-num">100,00%</td><td></td>
+  </tr>`:'';
+  const totalRowUSD=tUSD.length>0?`<tr class="cartera-total-row">
+    <td>TOTAL</td><td></td>
+    <td></td><td></td>
+    <td></td>
+    <td class="td-num">${fmt(totUSD_liq.ca,2)}</td>
+    <td class="td-num ${colorClass(totUSD_liq.resultado)}">${fmt(totUSD_liq.resultado,2)}</td>
+    <td></td><td class="td-num">100,00%</td><td></td>
+  </tr>`:'';
+
+  if(!cartRowsARS) cartRowsARS=`<tr><td colspan="10"><div class="empty-state" style="padding:20px"><p>Sin posiciones. Cargá movimientos de compra.</p></div></td></tr>`;
+  if(!cartRowsUSD) cartRowsUSD=`<tr><td colspan="10"><div class="empty-state" style="padding:20px"><p>Sin posiciones.</p></div></td></tr>`;
+
+  // Movimientos
+  let movRows='';
+  sortedMovs(d.movs).forEach(m=>{
+    // Aportes implícitos: mostrar como fila informativa no editable (están vinculados a la compra)
+    const esImplicito=m.origen==='aporte_implicito';
+    movRows+=`<tr style="${esImplicito?'opacity:0.6;font-style:italic':''}">
+      <td>${m.fecha}</td>
+      <td><span class="badge badge-blue">${instrLabel(m.instrumento)}</span></td>
+      <td class="td-main">${m.activo||'—'}</td>
+      <td>${m.cantidad?fmt(m.cantidad,2):'—'}</td>
+      <td>${m.precio_ars?fmt(m.precio_ars,2):'—'}</td>
+      <td class="td-main">${fmtARS(m.importe_ars)}</td>
+      <td>${esImplicito?'<span class="badge" style="background:var(--blue-bg);color:var(--blue)">Aporte impl.</span>':m.aporte_capital?'<span class="badge badge-yellow">Aporte cap.</span>':'<span class="badge badge-gray">'+tipoLabel(m.tipo)+'</span>'}</td>
+      <td>${m.obs||'—'}</td>
+      <td style="display:flex;gap:4px">${esImplicito
+        ?'<span style="font-size:10px;color:var(--text3)" title="Generado automáticamente. Eliminá la compra para quitarlo.">auto</span>'
+        :`<button class="btn-icon btn-sm" onclick="editMov('${m.id}')" title="Editar">✎</button><button class="btn-icon btn-sm" onclick="deleteMov('${m.id}')" title="Eliminar">✕</button>`
+      }</td>
+    </tr>`;
+  });
+  if(!movRows) movRows=`<tr><td colspan="9"><div class="empty-state" style="padding:20px"><p>Sin movimientos este período</p></div></td></tr>`;
+
+  // Alertas
+  const estadosPrecios=d.tablaARS.filter(r=>!r.es_futuro).map(r=>r.estado_precio);
+  const hasArrastrado=estadosPrecios.includes('arrastrado');
+  const hasEstimado=estadosPrecios.includes('estimado_compra');
+  const alertPrecios=(hasEstimado
+    ?`<div class="alert alert-warn" style="margin-bottom:12px">⚠ Hay activos valuados al PPC de compra (~) por falta de precio spot. Cargá el spot en Precios Spot para valuación real.</div>`
+    :hasArrastrado
+    ?`<div class="alert alert-warn" style="margin-bottom:12px">⚠ Hay precios spot del período anterior. Actualizá en Precios Spot.</div>`
+    :'');
+
+  // Patrimonio real para las tarjetas (incluye futuros + liquidez)
+  const pat_ars_card=r2(d.patrimonio);      // CA posiciones + liquidez + futuros
+  const pat_usd_card=r2(d.ca_usd_tot);     // ídem en USD
+  // Resultado cards: base ampliada (Patrimonio - CIM_ampliado)
+  const res_ars_card=d.resultado_mensual_ars;
+  const res_usd_card=d.resultado_mensual_usd;
+  // % resultado sobre CIM ampliado (misma base que el resultado)
+  const varPctARS=d.capital_base_ars>0?r2(res_ars_card/d.capital_base_ars*100):null;
+  const varPctUSD=d.capital_base_usd>0?r2(res_usd_card/d.capital_base_usd*100):null;
+  const thSort=(col,lbl,tooltip='')=>`<th style="cursor:pointer;user-select:none;text-align:center" onclick="sortCarteraBy('${col}')" title="${tooltip}">${lbl}${cartSort.col===col?(cartSort.asc?' ▲':' ▼'):''}</th>`;
+
+  page.innerHTML=`${alertPrecios}
+    <div class="page-header flex-between">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:13px;height:13px;border-radius:50%;background:${color}"></div>
+        <div>
+          <div class="page-title">${fondo.nombre}</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+            <input type="text" id="desc-inline-${fondo.id}" value="${fondo.descripcion||''}" placeholder="Agregar descripción..."
+              style="background:transparent;border:none;border-bottom:1px solid var(--border2);border-radius:0;padding:2px 4px;font-size:12px;color:var(--text3);width:220px;outline:none;font-family:var(--font-mono)"
+              onfocus="this.style.borderBottomColor='var(--accent)';this.style.color='var(--text)'"
+              onblur="saveDescInline('${fondo.id}',this.value);this.style.borderBottomColor='var(--border2)';this.style.color='var(--text3)'"
+              onkeydown="if(event.key==='Enter')this.blur()">
+            <span style="font-size:11px;color:var(--text3)">· ${periodoLabel(db.periodo)}</span>
+          </div>
+        </div>
+      </div>
+      <div class="flex-gap">
+        <button class="btn btn-danger btn-sm" onclick="deleteFondo('${fondo.id}')">Borrar</button>
+        <button class="btn btn-secondary btn-sm" onclick="editFondo('${fondo.id}')">Editar</button>
+        <button class="btn btn-secondary btn-sm" onclick="navigate('precios-spot')">Precios Spot</button>
+        <button class="btn btn-primary btn-sm" onclick="openMovModal('${fondo.id}')">+ Movimiento</button>
+      </div>
+    </div>
+    <div class="cards-row" style="grid-template-columns:repeat(4,1fr)">
+      <div class="card" style="border-color:var(--border2)">
+        <div class="card-label">Capital Base ${(()=>{const k=`${fondo.id}_${db.periodo.anio}_${db.periodo.mes}`;return db.config.capital_base_manual?.[k]?'<span class="badge badge-yellow" style="font-size:9px;padding:1px 5px;margin-left:4px">manual</span>':''})()}</div>
+        <div class="card-value">${d.capital_base_ars>0?fmtARS(d.capital_base_ars):'—'}</div>
+        <div class="card-sub" style="font-size:12px;margin-top:3px">${d.capital_base_usd>0?fmtUSD(d.capital_base_usd):'—'}</div>
+        <div class="card-sub" style="color:var(--text3);font-size:10px;margin-top:2px;display:flex;justify-content:space-between;align-items:center">
+          <span>${(()=>{const k=`${fondo.id}_${db.periodo.anio}_${db.periodo.mes}`;const ov=db.config.capital_base_manual?.[k];return ov?.dolar_base?`Base USD @ $${fmt(ov.dolar_base,2)}`:'Inicio de mes';})()}</span>
+          <button class="btn btn-secondary btn-sm" style="padding:1px 7px;font-size:9px" onclick="openCapitalBaseModal('${fondo.id}')">Editar</button>
+        </div>
+      </div>
+      <div class="card" style="border-color:var(--border2)">
+        <div class="card-label">Patrimonio actual</div>
+        <div class="card-value">${fmtARS(pat_ars_card)}</div>
+        <div class="card-sub">${fmtUSD(pat_usd_card)}</div>
+        <div class="card-sub" style="font-size:10px;color:var(--text3);margin-top:2px">CA tabla + liquidez</div>
+      </div>
+      <div class="card" style="border-color:var(--border2)">
+        <div class="card-label">Resultado en pesos <span style="color:var(--text3);font-weight:400">(Mensual)</span></div>
+        <div class="card-value ${colorClass(varPctARS)}" style="font-size:22px">${varPctARS!=null?fmtPct(varPctARS):'—'}</div>
+        <div class="card-sub ${colorClass(res_ars_card)}" style="font-size:13px;margin-top:5px;font-weight:600">${fmtARS(res_ars_card)}</div>
+      </div>
+      <div class="card" style="border-color:var(--border2)">
+        <div class="card-label">Resultado en dólares MEP <span style="color:var(--text3);font-weight:400">(Mensual)</span></div>
+        <div class="card-value ${colorClass(varPctUSD)}" style="font-size:22px">${varPctUSD!=null?fmtPct(varPctUSD):'—'}</div>
+        <div class="card-sub ${colorClass(res_usd_card)}" style="font-size:13px;margin-top:5px;font-weight:600">${fmtUSD(res_usd_card)}</div>
+      </div>
+    </div>
+    <div class="cards-row" style="grid-template-columns:repeat(4,1fr);margin-top:-6px">
+      <div class="card" style="background:var(--bg3);border-color:var(--border)">
+        <div class="card-label" style="font-size:9px">Aportes del período</div>
+        <div class="card-value green" style="font-size:15px">${fmtARS(d.aportes)}</div>
+      </div>
+      <div class="card" style="background:var(--bg3);border-color:var(--border)">
+        <div class="card-label" style="font-size:9px">Retiros del período</div>
+        <div class="card-value red" style="font-size:15px">${fmtARS(d.retiros)}</div>
+      </div>
+    </div>
+    <div class="table-wrap" style="margin-bottom:4px">
+      <div class="table-head"><div class="table-title">Cartera $</div><span class="badge badge-gray">${d.cartera.length} posiciones</span></div>
+      <div class="table-scroll"><table style="width:100%">
+        <thead><tr>
+          ${thSort('activo','Ticker')}<th style="text-align:center">Tipo</th>${thSort('cantidad','Cantidad')}<th style="text-align:center">PPC $</th>
+          <th style="text-align:center">SPOT</th>${thSort('ca','Capital Actual $','Valor a precios actuales')}
+          ${thSort('resultado','Resultado $')}${thSort('varPct','Var $ %')}
+          <th style="text-align:center">Particip %</th><th style="text-align:center">⚠</th>
+        </tr></thead>
+        <tbody>${cartRowsARS}${liqRowARS}${totalRowARS}</tbody>
+      </table></div>
+    </div>
+    <div class="table-wrap">
+      <div class="table-head"><div class="table-title">Cartera U$S</div></div>
+      <div class="table-scroll"><table style="width:100%">
+        <thead><tr>
+          <th style="text-align:center">Ticker</th><th style="text-align:center">Tipo</th><th style="text-align:center">Cantidad</th>
+          <th style="text-align:center">PPC U$S</th>
+          <th style="text-align:center">SPOT U$S</th><th style="text-align:center">Capital Actual U$S</th>
+          <th style="text-align:center">Resultado U$S</th><th style="text-align:center">Var U$S %</th>
+          <th style="text-align:center">Particip %</th><th style="text-align:center">⚠</th>
+        </tr></thead>
+        <tbody>${cartRowsUSD}${liqRowUSD}${totalRowUSD}</tbody>
+      </table></div>
+    </div>
+    <div class="table-wrap">
+      <div class="table-head"><div class="table-title">Movimientos del período</div><span class="badge badge-gray">${d.movs.length}</span></div>
+      <div class="table-scroll"><table>
+        <thead><tr>
+          <th>Fecha</th><th>Instrumento</th><th>Activo</th><th>Cantidad</th>
+          <th>Precio $</th><th>Monto $</th><th>Operación</th><th>Obs</th><th></th>
+        </tr></thead>
+        <tbody>${movRows}</tbody>
+      </table></div>
+    </div>`;
+}
+
+// ============================================================
+// MOVIMIENTOS
+// ============================================================
+function sortMovsBy(col){
+  if(movSort.col===col) movSort.asc=!movSort.asc;
+  else{ movSort.col=col; movSort.asc=true; }
+  renderMovimientos();
+}
+function sortedMovs(movsList){
+  const {col,asc}=movSort;
+  return [...movsList].sort((a,b)=>{
+    let va,vb;
+    if(col==='fecha'){ va=a.fecha||''; vb=b.fecha||''; }
+    else if(col==='fondo'){ const fa=db.fondos.find(f=>f.id===a.fondo_id); const fb=db.fondos.find(f=>f.id===b.fondo_id); va=fa?fa.nombre:''; vb=fb?fb.nombre:''; }
+    else if(col==='instrumento'){ va=a.instrumento||''; vb=b.instrumento||''; }
+    else if(col==='activo'){ va=a.activo||''; vb=b.activo||''; }
+    else if(col==='cantidad'){ va=parseFloat(a.cantidad)||0; vb=parseFloat(b.cantidad)||0; }
+    else if(col==='precio'){ va=parseFloat(a.precio_ars)||0; vb=parseFloat(b.precio_ars)||0; }
+    else if(col==='importe'){ va=parseFloat(a.importe_ars)||0; vb=parseFloat(b.importe_ars)||0; }
+    else if(col==='tipo'){ va=a.tipo||''; vb=b.tipo||''; }
+    else{ va=a.fecha||''; vb=b.fecha||''; }
+    if(typeof va==='string') return asc?va.localeCompare(vb,'es'):vb.localeCompare(va,'es');
+    return asc?va-vb:vb-va;
+  });
+}
+function movSortArrow(col){ if(movSort.col!==col) return ' <span style="opacity:0.3">⇅</span>'; return movSort.asc?' ▲':' ▼'; }
+
+function renderMovimientos(){
+  const page=document.getElementById('page-movimientos');
+  const movs=sortedMovs(db.movimientos);
+  let rows='';
+  movs.forEach(m=>{
+    const f=db.fondos.find(f=>f.id===m.fondo_id); const color=f?getFondoColor(parseInt(f.color)):'#555';
+    rows+=`<tr>
+      <td>${m.fecha}</td>
+      <td class="td-main"><div style="display:flex;align-items:center;gap:6px"><div style="width:6px;height:6px;border-radius:50%;background:${color}"></div>${f?f.nombre:'—'}</div></td>
+      <td><span class="badge badge-blue">${instrLabel(m.instrumento)}</span></td>
+      <td class="td-main">${m.activo||'—'}</td>
+      <td>${m.cantidad?fmt(m.cantidad,2):'—'}</td>
+      <td>${m.precio_ars?fmt(m.precio_ars,2):'—'}</td>
+      <td class="td-main">${fmtARS(m.importe_ars)}</td>
+      <td>${m.aporte_capital?'<span class="badge badge-yellow">Aporte cap.</span>':'<span class="badge badge-gray">'+tipoLabel(m.tipo)+'</span>'}</td>
+      <td style="display:flex;gap:4px"><button class="btn-icon btn-sm" onclick="editMov('${m.id}')" title="Editar">✎</button><button class="btn-icon btn-sm" onclick="deleteMov('${m.id}')" title="Eliminar">✕</button></td>
+    </tr>`;
+  });
+  if(!rows) rows=`<tr><td colspan="9"><div class="empty-state"><div class="icon">⇄</div><p>Sin movimientos.</p></div></td></tr>`;
+  const thS=(col,lbl)=>`<th style="cursor:pointer;user-select:none;white-space:nowrap" onclick="sortMovsBy('${col}')">${lbl}${movSortArrow(col)}</th>`;
+  page.innerHTML=`
+    <div class="page-header flex-between">
+      <div><div class="page-title">Movimientos</div><div class="page-subtitle">${periodoLabel(db.periodo)} · ${db.movimientos.length} registros</div></div>
+      <button class="btn btn-primary" onclick="openMovModal()">+ Nuevo movimiento</button>
+    </div>
+    <div class="table-wrap"><div class="table-scroll"><table>
+      <thead><tr>${thS('fecha','Fecha')}${thS('fondo','Fondo')}${thS('instrumento','Instrumento')}${thS('activo','Activo')}${thS('cantidad','Cantidad')}${thS('precio','Precio $')}${thS('importe','Monto operado $')}${thS('tipo','Operación')}<th></th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div></div>`;
+}
+
+// ============================================================
+// PRECIOS SPOT
+// ============================================================
+function getActivosEnCartera(){
+  // Solo activos con posición abierta (saldo > 0) en algún fondo activo
+  const activos={};
+  fondosOrdenados().forEach(f=>{
+    buildCartera(f.id).forEach(pos=>{
+      const key=pos.activo.trim().toUpperCase();
+      if(!activos[key]) activos[key]={activo:key, instrumento:pos.instrumento||'otro'};
+    });
+  });
+  return Object.values(activos).sort((a,b)=>a.activo.localeCompare(b.activo));
+}
+
+function renderPreciosSpot(){
+  const page=document.getElementById('page-precios-spot');
+  const activos=getActivosEnCartera();
+  let rows='';
+  activos.forEach(a=>{
+    const precioActual=db.precios[a.activo]?.precio||null;
+    const fecha=db.precios[a.activo]?.fecha||'';
+    rows+=`<tr>
+      <td class="td-main">${a.activo}</td>
+      <td><span class="badge badge-blue">${instrLabel(a.instrumento)}</span></td>
+      <td><input type="text" inputmode="decimal" id="spot-${a.activo}" value="${precioActual?fmt(precioActual,2):''}" placeholder="0,00"
+        style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:6px 10px;color:var(--text);font-family:var(--font-mono);font-size:12px;width:160px;outline:none;text-align:right"
+        onfocus="this.style.borderColor='var(--accent)'"
+        onblur="reformatInput(this);this.style.borderColor='var(--border2)'"></td>
+      <td style="font-size:11px;color:var(--text3)">${fecha||'—'}</td>
+    </tr>`;
+  });
+  if(!rows) rows=`<tr><td colspan="4"><div class="empty-state"><p>No hay activos en cartera.</p></div></td></tr>`;
+  page.innerHTML=`
+    <div class="page-header flex-between">
+      <div><div class="page-title">Precios Spot</div><div class="page-subtitle">Actualizá los precios para valuar la cartera</div></div>
+      <div class="flex-gap">
+        <label class="btn btn-secondary btn-sm" style="cursor:pointer">Importar CSV<input type="file" accept=".csv,.txt" style="display:none" onchange="importarPreciosCSV(event)"></label>
+        <button class="btn btn-secondary btn-sm" onclick="exportarPlantillaCSV()">Descargar plantilla</button>
+        <button class="btn btn-primary" onclick="guardarPreciosSpot()">Guardar precios</button>
+      </div>
+    </div>
+    <div class="alert alert-info" style="margin-bottom:20px">Los precios spot se usan solo para valuar la cartera. No modifican el precio de compra histórico.</div>
+    <div class="alert alert-warn" style="margin-bottom:20px;font-size:11px">⚠ <strong>Tickers ambiguos:</strong> verificá que la letra O (vocal) y el dígito 0 (cero) estén cargados correctamente. Ej: <code>DNC3<u>O</u></code> vs <code>DNC3<u>0</u></code>. El sistema los trata como instrumentos distintos.</div>
+    <div class="table-wrap">
+      <div class="table-head"><div class="table-title">Activos en cartera</div><span class="badge badge-gray">${activos.length} instrumentos</span></div>
+      <table><thead><tr><th>Activo</th><th>Tipo</th><th>Precio spot $</th><th>Última actualización</th></tr></thead>
+      <tbody>${rows}</tbody></table>
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-top:-10px">
+      USD MEP actual: <strong style="color:var(--yellow)">${fmt(db.config.usd_mep_default,2)}</strong>
+      — <span style="cursor:pointer;color:var(--accent)" onclick="openConfigUSD()">Actualizar</span>
+    </div>`;
+}
+
+function guardarPreciosSpot(){
+  const activos=getActivosEnCartera(); let count=0;
+  const hoy=new Date().toISOString().split('T')[0];
+  activos.forEach(a=>{
+    const input=document.getElementById('spot-'+a.activo); if(!input) return;
+    const val=parseAR(input.value);
+    if(!isNaN(val)&&val>0){
+      db.precios[a.activo]={precio:val,instrumento:a.instrumento,fecha:hoy,periodo_mes:db.periodo.mes,periodo_anio:db.periodo.anio,origen_precio:'manual'};
+      count++;
+    }
+  });
+  saveDB(); showToast(count+' precio(s) guardado(s)'); refreshCurrentPage(); renderPreciosSpot();
+}
+
+function importarPreciosCSV(e){
+  const file=e.target.files[0]; if(!file) return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    const lines=ev.target.result.split(/\r?\n/).filter(l=>l.trim());
+    const hoy=new Date().toISOString().split('T')[0];
+    let count=0, errors=0;
+    const muestra=lines.find((_,i)=>i>0)||lines[0]||'';
+    const sep=muestra.includes(';')?';':(muestra.includes('\t')?'\t':',');
+    lines.forEach((line,i)=>{
+      if(i===0&&line.toLowerCase().includes('instrumento')) return;
+      const cols=line.split(sep); if(cols.length<2) return;
+      const activo=cols[0].trim().toUpperCase(); if(!activo) return;
+      const precio=parseAR(cols[1].trim());
+      if(!isNaN(precio)&&precio>0){
+        const input=document.getElementById('spot-'+activo);
+        if(input) input.value=fmt(precio,2);
+        db.precios[activo]={precio,instrumento:db.precios[activo]?.instrumento||'otro',fecha:hoy,periodo_mes:db.periodo.mes,periodo_anio:db.periodo.anio,origen_precio:'csv'};
+        count++;
+      } else if(activo){ errors++; }
+    });
+    saveDB(); showToast(count+' precio(s) importado(s)'+(errors>0?' ('+errors+' ignorados)':''));
+    renderPreciosSpot();
+  };
+  r.readAsText(file); e.target.value='';
+}
+
+function exportarPlantillaCSV(){
+  const activos=getActivosEnCartera();
+  let csv='Instrumento;Precio spot\n';
+  activos.forEach(a=>{ const p=db.precios[a.activo]?.precio||''; csv+=`${a.activo};${p?fmt(p,2):''}\n`; });
+  const blob=new Blob([csv],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const link=document.createElement('a'); link.href=url; link.download='precios_spot_'+new Date().toISOString().split('T')[0]+'.csv'; link.click(); URL.revokeObjectURL(url);
+  showToast('Plantilla exportada');
+}
+
+// ============================================================
+// CIERRES
+// ============================================================
+const CIERRES_OCULTOS = [{ mes: 3, anio: 2026 }];
+function isCierreVisible(c){ return !CIERRES_OCULTOS.some(x=>x.mes===c.mes&&x.anio===c.anio); }
+
+function renderCierres(){
+  const page=document.getElementById('page-cierres');
+  const cierresVisibles=db.cierres.filter(isCierreVisible);
+  if(!cierresVisibles.length){
+    page.innerHTML=`<div class="page-header flex-between">
+      <div><div class="page-title">Cierres mensuales</div><div class="page-subtitle">Historial con arrastre automático</div></div>
+      <div class="flex-gap">
+        <button class="btn btn-secondary" onclick="openInflacion()">◎ Inflación mensual</button>
+        <button class="btn btn-primary" onclick="openModal('modal-cierre');buildCierrePreview()">Nuevo cierre</button>
+      </div></div>
+      <div class="empty-state"><div class="icon">◷</div><p>No hay cierres registrados.</p></div>`;
+    return;
+  }
+  const g={};
+  cierresVisibles.forEach(c=>{ const k=`${c.anio}-${String(c.mes).padStart(2,'0')}`; if(!g[k]) g[k]=[]; g[k].push(c); });
+  const keys=Object.keys(g).sort().reverse();
+  if(!cierreTabActiva||!g[cierreTabActiva]) cierreTabActiva=keys[0];
+  const tabs=keys.map(k=>{ const[anio,mes]=k.split('-'); return`<div class="cierre-tab${k===cierreTabActiva?' active':''}" onclick="cierreTabActiva='${k}';renderCierres()">${periodoLabel({mes:parseInt(mes),anio:parseInt(anio)})}</div>`; }).join('');
+  const content_html=renderCierresPeriodo(cierreTabActiva,g[cierreTabActiva]);
+  page.innerHTML=`<div class="page-header flex-between">
+    <div><div class="page-title">Cierres mensuales</div><div class="page-subtitle">Historial con arrastre automático</div></div>
+    <div class="flex-gap">
+      <button class="btn btn-secondary" onclick="openInflacion()">◎ Inflación mensual</button>
+      <button class="btn btn-secondary btn-sm" onclick="openPreciosCierre()">$ Precios cierre</button>
+      <button class="btn btn-primary" onclick="openModal('modal-cierre');buildCierrePreview()">Nuevo cierre</button>
+    </div></div>
+    <div class="cierre-tabs">${tabs}</div>${content_html}`;
+}
+
+function renderCierresPeriodo(k, snapshots){
+  if(!snapshots) return '';
+  const[anio,mes]=k.split('-').map(Number);
+  const cons=snapshots.find(c=>c.fondo_id==='_consolidado');
+  const fondos=snapshots.filter(c=>c.fondo_id!=='_consolidado');
+  const cap_ars=cons?.capital_invertido_ars??0;
+  const res_ars=cons?.resultado_ars??0;
+  const cap_usd=cons?.capital_invertido_usd??0;
+  const res_usd=cons?.resultado_usd_mep??0;
+  const mep=cons?.usd_mep_cierre??0;
+  const infKey=`${anio}-${String(mes).padStart(2,'0')}`;
+  const inflacion=(db.config.inflacion_mensual||{})[infKey];
+  const tem_nominal=cap_ars>0?r2(res_ars/cap_ars*100):null;
+  const tem_usd_total=cap_usd>0?r2(res_usd/cap_usd*100):null;
+  const tem_real_pct=(inflacion!=null&&tem_nominal!=null)?r2(((1+tem_nominal/100)/(1+inflacion/100)-1)*100):null;
+  const tem_real_ars=(inflacion!=null&&cons)?r2(res_ars-(cap_ars*inflacion/100)):null;
+  const tem_real_usd=(tem_real_ars!=null&&mep>0)?r2(tem_real_ars/mep):null;
+  const accentClass=(v)=>v==null?'':(v>0?'positive':'negative');
+  const principalCards=`
+    <div class="cierre-card-principal ${accentClass(tem_real_pct)}">
+      <div class="label">TEM Real %</div><div class="value ${colorClass(tem_real_pct)}">${tem_real_pct!=null?fmtPct(tem_real_pct):'—'}</div>
+      <div class="subvalue">${inflacion!=null?`Inflación: ${fmt(inflacion,2)}%`:'Sin inflación cargada'}</div>
+    </div>
+    <div class="cierre-card-principal ${accentClass(tem_real_ars)}">
+      <div class="label">TEM Real $</div><div class="value ${colorClass(tem_real_ars)}">${tem_real_ars!=null?fmtARS(tem_real_ars):'—'}</div>
+      <div class="subvalue">${tem_nominal!=null?`TEM nominal: ${fmtPct(tem_nominal)}`:'—'}</div>
+    </div>
+    <div class="cierre-card-principal ${accentClass(tem_real_usd)}">
+      <div class="label">TEM Real U$S</div><div class="value ${colorClass(tem_real_usd)}">${tem_real_usd!=null?fmtUSD(tem_real_usd):'—'}</div>
+      <div class="subvalue">${mep>0?`MEP cierre: ${fmt(mep,2)}`:'—'}</div>
+    </div>`;
+  const secCards=[
+    {l:'MEP cierre',v:mep?fmt(mep,2):'—',c:''},
+    {l:'Inflación mes',v:inflacion!=null?fmt(inflacion,2)+'%':'—',c:''},
+    {l:'Patrimonio total',v:cons?fmtARS(cons.patrimonio_ars??0):'—',c:''},
+    {l:'Capital invertido',v:cons?fmtARS(cap_ars):'—',c:''},
+    {l:'Resultado $',v:cons?fmtARS(res_ars):'—',c:colorClass(res_ars)},
+    {l:'Resultado U$S MEP',v:cons?fmtUSD(res_usd):'—',c:colorClass(res_usd)},
+    {l:'TEM $',v:tem_nominal!=null?`<span class="badge ${badgeClass(tem_nominal)}">${fmtPct(tem_nominal)}</span>`:'—',c:''},
+    {l:'TEM U$S',v:tem_usd_total!=null?fmtPct(tem_usd_total):'—',c:colorClass(tem_usd_total)},
+  ].map(({l,v,c})=>`<div class="cierre-card-mini"><div class="label">${l}</div><div class="value ${c}">${v}</div></div>`).join('');
+  const rows=fondos.map(c=>{
+    const f=db.fondos.find(f=>f.id===c.fondo_id);
+    const res=c.resultado_ars??0; const tem=c.tem_ars??0;
+    return`<tr>
+      <td class="td-main">${f?f.nombre:'Eliminado'}</td>
+      <td>${fmtARS(c.patrimonio_ars??c.saldo_final??0)}</td>
+      <td>${fmtARS(c.capital_invertido_ars??0)}</td>
+      <td class="${colorClass(res)}">${fmtARS(res)}</td>
+      <td class="${colorClass(tem)}"><span class="badge ${badgeClass(tem)}">${fmtPct(tem)}</span></td>
+      <td class="${colorClass(c.resultado_usd_mep)}">${c.resultado_usd_mep!=null?fmtUSD(c.resultado_usd_mep):'—'}</td>
+      <td class="${colorClass(c.tem_usd)}">${c.tem_usd!=null?fmtPct(c.tem_usd):'—'}</td>
+    </tr>`;
+  }).join('');
+  return`<div class="cierre-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div style="font-family:var(--font-head);font-size:15px;font-weight:600">${periodoLabel({mes,anio})}</div>
+      <span class="badge badge-green">Cerrado</span>
+    </div>
+    <div class="cierre-cards-principales">${principalCards}</div>
+    <div class="cierre-cards-periodo">${secCards}</div>
+    <div class="table-scroll"><table>
+      <thead><tr><th>Fondo</th><th>Patrimonio $</th><th>Capital inv. $</th><th>Resultado $</th><th>TEM $</th><th>Resultado U$S MEP</th><th>TEM U$S</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>
+  </div>`;
+}
+
+// ============================================================
+// ANUAL
+// ============================================================
+function renderAnual(){
+  const page=document.getElementById('page-anual');
+  const cierresVisibles=db.cierres.filter(isCierreVisible);
+  const years=[...new Set(cierresVisibles.map(c=>c.anio))].sort().reverse();
+  if(!years.length){
+    page.innerHTML=`<div class="page-header"><div class="page-title">Histórico Anual</div></div><div class="empty-state"><div class="icon">◉</div><p>No hay cierres mensuales aún.</p></div>`;
+    return;
+  }
+  const snapshots=cierresVisibles.filter(c=>c.fondo_id==='_consolidado');
+  let html=`<div class="page-header"><div class="page-title">Histórico Anual</div><div class="page-subtitle">Desde snapshots de cierres cerrados</div></div>`;
+  years.forEach(anio=>{
+    const meses=[...new Set(cierresVisibles.filter(c=>c.anio===anio&&c.fondo_id!=='_consolidado').map(c=>c.mes))].sort((a,b)=>a-b);
+    const consolidados=snapshots.filter(c=>c.anio===anio);
+    let ytd_ars=0, ytd_usd=0;
+    consolidados.forEach(c=>{ ytd_ars+=c.resultado_ars||0; ytd_usd+=c.resultado_usd_mep||0; });
+    html+=`<div class="table-wrap" style="margin-bottom:24px">
+      <div class="table-head flex-between">
+        <div class="table-title">${anio}</div>
+        <div class="flex-gap">
+          <span style="font-size:12px;color:var(--text3)">YTD $: <span class="${colorClass(ytd_ars)}">${fmtARS(ytd_ars)}</span></span>
+          <span style="font-size:12px;color:var(--text3)">YTD U$S: <span class="${colorClass(ytd_usd)}">${fmtUSD(ytd_usd)}</span></span>
+        </div>
+      </div>
+      <div class="table-scroll"><table>
+        <thead><tr><th>Mes</th><th>Patrimonio $</th><th>Capital inv. $</th><th>Capital inv. U$S</th><th>Resultado $</th><th>Resultado U$S MEP</th><th>Patrimonio U$S</th><th>MEP cierre</th></tr></thead>
+        <tbody>`;
+    meses.forEach(mes=>{
+      const cons=consolidados.find(c=>c.mes===mes); if(!cons) return;
+      const mLabel=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][mes-1];
+      html+=`<tr>
+        <td class="td-main">${mLabel} ${anio}</td>
+        <td>${fmtARS(cons.patrimonio_ars)}</td><td>${fmtARS(cons.capital_invertido_ars)}</td>
+        <td>${fmtUSD(cons.capital_invertido_usd)}</td>
+        <td class="${colorClass(cons.resultado_ars)}">${fmtARS(cons.resultado_ars)}</td>
+        <td class="${colorClass(cons.resultado_usd_mep)}">${cons.resultado_usd_mep!=null?fmtUSD(cons.resultado_usd_mep):'—'}</td>
+        <td>${fmtUSD(cons.patrimonio_usd)}</td><td>${fmt(cons.usd_mep_cierre||0,2)}</td>
+      </tr>`;
+    });
+    html+=`</tbody></table></div></div>`;
+  });
+  page.innerHTML=html;
+}
+
+// ============================================================
+// NOTAS
+// ============================================================
+const NOTAS_KEY = 'fondos_beta_notas';
+function loadNotas(){ try{ return JSON.parse(localStorage.getItem(NOTAS_KEY)||'[]'); }catch(e){ return []; } }
+function saveNotas(notas){ localStorage.setItem(NOTAS_KEY, JSON.stringify(notas)); }
+function renderNotas(){
+  const page = document.getElementById('page-notas');
+  const notas = loadNotas();
+  page.innerHTML=`
+    <div class="page-header flex-between">
+      <div><div class="page-title">Notas</div><div class="page-subtitle">Anotaciones personales</div></div>
+    </div>
+    <div style="max-width:680px">
+      <div class="card" style="margin-bottom:18px;padding:16px 18px">
+        <div class="card-label" style="margin-bottom:8px">Nueva nota</div>
+        <textarea id="nota-input" placeholder="Escribí tu nota..." style="width:100%;min-height:90px;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:10px 12px;color:var(--text);font-size:12px;font-family:var(--font-mono);resize:vertical;outline:none;box-sizing:border-box"
+          onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'"
+          onkeydown="if((event.ctrlKey||event.metaKey)&&event.key==='Enter'){event.preventDefault();guardarNota();}"></textarea>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+          <span style="font-size:10px;color:var(--text3)">Ctrl+Enter para guardar</span>
+          <button class="btn btn-primary btn-sm" onclick="guardarNota()">Guardar nota</button>
+        </div>
+      </div>
+      <div id="notas-lista">
+        ${notas.length===0
+          ? `<div class="empty-state"><div class="icon">✎</div><p>Sin notas aún.</p></div>`
+          : notas.slice().reverse().map(n=>`
+            <div class="cierre-card" style="position:relative;padding:14px 16px">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+                <div style="flex:1">
+                  <div style="font-size:10px;color:var(--text3);margin-bottom:6px;font-family:var(--font-mono)">${new Date(n.fecha).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
+                  <div style="font-size:13px;white-space:pre-wrap;line-height:1.55">${n.texto.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+                </div>
+                <button class="btn-icon btn-sm" onclick="eliminarNota('${n.id}')" title="Eliminar nota" style="flex-shrink:0;color:var(--red)">✕</button>
+              </div>
+            </div>`).join('')
+        }
+      </div>
+    </div>`;
+  document.getElementById('nota-input')?.focus();
+}
+function guardarNota(){
+  const input = document.getElementById('nota-input');
+  const texto = (input?.value||'').trim();
+  if(!texto){ showToast('Escribí algo antes de guardar','warn'); return; }
+  const notas = loadNotas();
+  notas.push({ id: uid(), fecha: new Date().toISOString(), texto });
+  saveNotas(notas);
+  renderNotas();
+  showToast('Nota guardada');
+}
+function eliminarNota(id){
+  const notas = loadNotas().filter(n=>n.id!==id);
+  saveNotas(notas);
+  renderNotas();
+  showToast('Nota eliminada');
+}
+
+// ============================================================
+// MODAL: MOVIMIENTO
+// ============================================================
+function openMovModal(preloadFondoId=null){
+  if(!db.fondos.length){ showToast('Creá un fondo primero','warn'); return; }
+  document.getElementById('mov-fondo').innerHTML=fondosOrdenados().map(f=>`<option value="${f.id}"${f.id===preloadFondoId?' selected':''}>${f.nombre}</option>`).join('');
+  document.getElementById('mov-fecha').value=new Date().toISOString().split('T')[0];
+  document.getElementById('mov-instrumento').value='liquidez';
+  updateOperaciones();
+  ['mov-activo','mov-cantidad','mov-precio','mov-importe','mov-obs'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('mov-usd-mep').value=fmtInput(db.config.usd_mep_default);
+  document.getElementById('mov-comision').value=fmt(0,2);
+  document.getElementById('mov-impuestos').value=fmt(0,2);
+  document.getElementById('mov-aporte-capital').checked=false;
+  editingMovId=null;
+  document.getElementById('modal-mov-title').textContent='Nuevo Movimiento';
+  document.getElementById('mov-save-btn').textContent='Guardar movimiento';
+  openModal('modal-mov');
+}
+
+function updateOperaciones(){
+  const instr=normalizeBono(document.getElementById('mov-instrumento').value);
+  const esRF=instr==='renta_fija';
+  const precioInput=document.getElementById('mov-precio');
+  if(precioInput){
+    precioInput.placeholder=esRF?'159,000':'0,00';
+    precioInput.onblur=()=>reformatInput(precioInput,esRF?3:2);
+    precioInput.title=esRF?'Ej: si el precio es 159, pagás $1,59 por cada VN 1':'';
+  }
+  // Labels dinámicos RF
+  const lblPrecio=document.getElementById('lbl-precio');
+  const lblCantidad=document.getElementById('lbl-cantidad');
+  if(lblPrecio) lblPrecio.textContent=esRF?'Precio (VN 100)':'Precio unitario $';
+  if(lblCantidad) lblCantidad.textContent=esRF?'Cantidad (VN)':'Cantidad';
+  // Helpers RF
+  const helperPrecio=document.getElementById('helper-precio');
+  const helperCantidad=document.getElementById('helper-cantidad');
+  const helperImporte=document.getElementById('helper-importe');
+  if(helperPrecio) helperPrecio.style.display=esRF?'block':'none';
+  if(helperCantidad) helperCantidad.style.display=esRF?'block':'none';
+  if(helperImporte) helperImporte.style.display=esRF?'block':'none';
+  const ops={liquidez:[['deposito','Depósito'],['retiro','Retiro']],renta_fija:[['compra','Compra'],['venta','Venta'],['renta','Cobro renta/cupón']],accion:[['compra','Compra'],['venta','Venta'],['dividendo','Dividendo']],cedear:[['compra','Compra'],['venta','Venta'],['dividendo','Dividendo']],fci:[['compra','Suscripción'],['venta','Rescate'],['renta','Renta']],futuro:[['futuro_compra','Compra'],['futuro_venta','Venta']],opcion:[['opcion_call','Call'],['opcion_put','Put']],otro:[['otro','Otro']]};
+  document.getElementById('mov-operacion').innerHTML=(ops[instr]||ops.otro).map(([v,l])=>`<option value="${v}">${l}</option>`).join('');
+  // Mostrar checkbox solo para liquidez (depósitos); para compras el aporte es automático
+  const esLiquidez=instr==='liquidez';
+  const aporteRow=document.getElementById('mov-aporte-row');
+  if(aporteRow) aporteRow.style.display=esLiquidez?'':'none';
+  if(!esLiquidez) document.getElementById('mov-aporte-capital').checked=false;
+  // Limpiar hint
+  const hint=document.getElementById('mov-aporte-implicito-hint');
+  if(hint) hint.style.display='none';
+  // Actualizar hint al cambiar instrumento
+  actualizarHintAporteImplicito();
+}
+
+function calcImporteAuto(){
+  const cant=parseAR(document.getElementById('mov-cantidad').value)||0;
+  const precio=parseAR(document.getElementById('mov-precio').value)||0;
+  const instr=normalizeBono(document.getElementById('mov-instrumento').value);
+  if(cant&&precio){ const imp=instr==='renta_fija'?(cant/100)*precio:instr==='futuro'?cant*precio*100:cant*precio; document.getElementById('mov-importe').value=fmt(imp,2); }
+  actualizarHintAporteImplicito();
+}
+
+// Muestra hint de aporte implícito cuando la compra excede la liquidez actual del fondo.
+// Calcula la liquidez directamente sin llamar al motor completo para mayor eficiencia.
+function actualizarHintAporteImplicito(){
+  const hint=document.getElementById('mov-aporte-implicito-hint');
+  if(!hint) return;
+  const tipo=document.getElementById('mov-operacion').value;
+  const TIPOS_COMPRA=['compra','opcion_call','opcion_put','futuro_compra'];
+  const esCompra=TIPOS_COMPRA.includes(tipo);
+  if(!esCompra){ hint.style.display='none'; return; }
+  const fondoId=document.getElementById('mov-fondo').value;
+  const fechaMov=document.getElementById('mov-fecha').value;
+  const importe=parseAR(document.getElementById('mov-importe').value)||0;
+  if(!fondoId||!importe){ hint.style.display='none'; return; }
+  // Calcular liquidez pre-movimiento de forma liviana (sin motor completo)
+  const fd=new Date((fechaMov||new Date().toISOString().split('T')[0])+'T00:00:00');
+  const periodoMes=fd.getMonth()+1, periodoAnio=fd.getFullYear();
+  const snapAnt2=getSnapAnterior(fondoId);
+  let liqPre=snapAnt2?(snapAnt2.liquidez_ars??snapAnt2.liquidez_final??0):0;
+  const movsAnt=db.movimientos.filter(m=>
+    m.fondo_id===fondoId&&m.periodo_mes===periodoMes&&m.periodo_anio===periodoAnio&&
+    (editingMovId?m.id!==editingMovId:true)
+  ).slice().sort((a,b)=>new Date(a.fecha)-new Date(b.fecha));
+  movsAnt.forEach(m=>{
+    const imp=parseFloat(m.importe_ars)||0;
+    if(m.tipo==='deposito'){ liqPre+=imp; }
+    else if(m.tipo==='retiro'){ liqPre-=imp; }
+    else if(TIPOS_COMPRA.includes(m.tipo)){ liqPre-=imp; }
+    else if(m.tipo==='venta'){ liqPre+=imp; }
+    else if(['renta','dividendo'].includes(m.tipo)){ liqPre+=imp; }
+  });
+  liqPre=Math.max(0,liqPre);
+  const faltante=r2(Math.max(0, importe - liqPre));
+  if(faltante > 0.01){
+    hint.style.display='';
+    document.getElementById('mov-hint-monto').textContent=fmtARS(faltante);
+  } else {
+    hint.style.display='none';
+  }
+}
+
+function saveMov(){
+  const fecha=document.getElementById('mov-fecha').value;
+  const fondoId=document.getElementById('mov-fondo').value;
+  const tipo=document.getElementById('mov-operacion').value;
+  const instrumento=normalizeBono(document.getElementById('mov-instrumento').value);
+  const activo=normalizeTicker(document.getElementById('mov-activo').value);
+  const cantidad=parseAR(document.getElementById('mov-cantidad').value)||null;
+  const precio=parseAR(document.getElementById('mov-precio').value)||null;
+  let importe=parseAR(document.getElementById('mov-importe').value)||0;
+  const usdMep=parseAR(document.getElementById('mov-usd-mep').value)||db.config.usd_mep_default;
+  const comision=parseAR(document.getElementById('mov-comision').value)||0;
+  const impuestos=parseAR(document.getElementById('mov-impuestos').value)||0;
+  const obs=document.getElementById('mov-obs').value;
+  const aporteCapital=document.getElementById('mov-aporte-capital').checked;
+  if(!fecha||!fondoId||!tipo){ showToast('Completá fecha, fondo y tipo','warn'); return; }
+  // RF: validación importe
+  if(instrumento==='renta_fija'&&cantidad>0&&precio>0&&importe>0){
+    const calc=r2((cantidad/100)*precio);
+    const diff=Math.abs(importe-calc)/calc;
+    if(diff>0.05){
+      const usar=confirm(`⚠ Monto no coincide con VN100\n\nIngresado:       $${fmt(importe,2)}\nCalculado (VN × Precio / 100): $${fmt(calc,2)}\n\nPara renta fija el monto = Cantidad × Precio / 100.\n¿Usar el valor calculado automáticamente?`);
+      if(usar) importe=calc;
+    }
+  }
+  const fd=new Date(fecha+'T00:00:00');
+  const periodoMes=fd.getMonth()+1;
+  const periodoAnio=fd.getFullYear();
+  const TIPOS_COMPRA=['compra','opcion_call','opcion_put','futuro_compra'];
+  const esCompra=TIPOS_COMPRA.includes(tipo);
+  const movId=editingMovId||uid();
+  const data={fondo_id:fondoId,fecha,periodo_mes:periodoMes,periodo_anio:periodoAnio,instrumento,tipo,activo,cantidad,precio_ars:precio,importe_ars:importe,usd_mep:usdMep,comision,impuestos,obs,aporte_capital:aporteCapital,origen:'manual'};
+
+  if(editingMovId){
+    // Al editar: eliminar aporte_implicito vinculado anterior (si existía) y recalcular
+    db.movimientos=db.movimientos.filter(m=>m.aporte_implicito_ref!==editingMovId);
+    const idx=db.movimientos.findIndex(m=>m.id===editingMovId);
+    if(idx>=0) db.movimientos[idx]={...db.movimientos[idx],...data};
+    editingMovId=null;
+  } else {
+    db.movimientos.push({id:movId,...data});
+  }
+
+  // Aporte implícito: si la compra supera la liquidez ANTES de este movimiento,
+  // persistir un movimiento de depósito vinculado (aporte_capital:true, origen:'aporte_implicito')
+  if(esCompra){
+    // Calcular liquidez disponible en el fondo ANTES de aplicar este movimiento
+    // buildFromMovimientos ya incluye todos los movs guardados; para el caso nuevo,
+    // el mov ya está en db — calculamos liquidez pre-movimiento manualmente.
+    const movsAnteriores=db.movimientos.filter(m=>
+      m.fondo_id===fondoId&&
+      m.periodo_mes===periodoMes&&m.periodo_anio===periodoAnio&&
+      m.id!==movId  // excluir el movimiento actual para leer estado previo
+    ).slice().sort((a,b)=>new Date(a.fecha)-new Date(b.fecha));
+    const snapAnt2=getSnapAnterior(fondoId);
+    let liqPre=snapAnt2?(snapAnt2.liquidez_ars??snapAnt2.liquidez_final??0):0;
+    movsAnteriores.forEach(m=>{
+      const imp=parseFloat(m.importe_ars)||0;
+      if(m.tipo==='deposito'){ liqPre+=imp; }
+      else if(m.tipo==='retiro'){ liqPre-=imp; }
+      else if(TIPOS_COMPRA.includes(m.tipo)){ liqPre-=imp; }
+      else if(m.tipo==='venta'){ liqPre+=imp; }
+      else if(['renta','dividendo'].includes(m.tipo)){ liqPre+=imp; }
+    });
+    liqPre=Math.max(0,liqPre);
+    const faltante=r2(Math.max(0, importe - liqPre));
+    if(faltante > 0.01){
+      // Persistir el aporte implícito como movimiento auditable
+      db.movimientos.push({
+        id:uid(),
+        fondo_id:fondoId,
+        fecha,
+        periodo_mes:periodoMes,
+        periodo_anio:periodoAnio,
+        instrumento:'liquidez',
+        tipo:'deposito',
+        activo:null,
+        cantidad:null,
+        precio_ars:null,
+        importe_ars:faltante,
+        usd_mep:usdMep,
+        comision:0, impuestos:0,
+        obs:`Aporte implícito auto — compra ${activo||instrumento} $${fmt(importe,2)}`,
+        aporte_capital:true,
+        origen:'aporte_implicito',
+        aporte_implicito_ref:movId  // vinculado a la compra que lo generó
+      });
+    }
+  }
+
+  saveDB(); closeModal('modal-mov');
+  document.getElementById('modal-mov-title').textContent='Nuevo Movimiento';
+  document.getElementById('mov-save-btn').textContent='Guardar movimiento';
+  showToast('Movimiento guardado'); refreshCurrentPage();
+}
+
+function editMov(id){
+  const m=db.movimientos.find(m=>m.id===id); if(!m) return;
+  editingMovId=id;
+  if(!db.fondos.length) return;
+  document.getElementById('mov-fondo').innerHTML=fondosOrdenados().map(f=>`<option value="${f.id}"${f.id===m.fondo_id?' selected':''}>${f.nombre}</option>`).join('');
+  document.getElementById('mov-fecha').value=m.fecha||'';
+  document.getElementById('mov-instrumento').value=normalizeBono(m.instrumento||'liquidez');
+  updateOperaciones();
+  document.getElementById('mov-operacion').value=m.tipo||'';
+  document.getElementById('mov-activo').value=m.activo||'';
+  document.getElementById('mov-cantidad').value=fmtInput(m.cantidad,2);
+  document.getElementById('mov-precio').value=fmtInput(m.precio_ars,(normalizeBono(m.instrumento))==='renta_fija'?3:2);
+  document.getElementById('mov-importe').value=fmtInput(m.importe_ars);
+  document.getElementById('mov-usd-mep').value=fmtInput(m.usd_mep||db.config.usd_mep_default);
+  document.getElementById('mov-comision').value=fmtInput(m.comision);
+  document.getElementById('mov-impuestos').value=fmtInput(m.impuestos);
+  document.getElementById('mov-obs').value=m.obs||'';
+  document.getElementById('mov-aporte-capital').checked=m.aporte_capital||false;
+  document.getElementById('modal-mov-title').textContent='Editar Movimiento';
+  document.getElementById('mov-save-btn').textContent='Guardar cambios';
+  openModal('modal-mov');
+}
+
+function deleteMov(id){
+  if(!confirm('¿Eliminar este movimiento?')) return;
+  // Si la compra tiene un aporte_implicito vinculado, eliminarlo también
+  db.movimientos=db.movimientos.filter(m=>m.id!==id&&m.aporte_implicito_ref!==id);
+  // Limpiar precios huérfanos
+  const activosEnCartera=new Set(db.movimientos.map(m=>m.activo&&m.activo.trim().toUpperCase()).filter(Boolean));
+  Object.keys(db.precios).forEach(k=>{ if(!activosEnCartera.has(k)) delete db.precios[k]; });
+  saveDB(); showToast('Movimiento eliminado'); refreshCurrentPage();
+}
+
+// ============================================================
+// MODAL: FONDO
+// ============================================================
+function prepareNewFondo(){
+  editingFondoId=null;
+  document.getElementById('modal-fondo-title').textContent='Nuevo Fondo';
+  document.getElementById('fondo-desc').value='';
+  document.getElementById('fondo-color').value='0';
+  document.getElementById('fondo-mep-row').style.display='none';
+  document.getElementById('fondo-mep-inicio').value='';
+  // Nombre: libre. La sugerencia es auto-generada pero el campo es editable.
+  const sugerencia=generarNombreFondo();
+  document.getElementById('fondo-nombre-input').value='';
+  document.getElementById('fondo-nombre-input').placeholder=sugerencia;
+  document.getElementById('fondo-nombre-sugerencia').textContent=sugerencia;
+  openModal('modal-fondo');
+}
+
+function generarNombreFondo(){
+  const mes=String(db.periodo.mes).padStart(2,'0');
+  let num=1;
+  while(true){ const n=`Fondo.${String(num).padStart(2,'0')}.${mes}`; if(!db.fondos.some(f=>f.nombre===n)) return n; num++; }
+}
+
+function editFondo(id){
+  const f=db.fondos.find(f=>f.id===id); if(!f) return;
+  editingFondoId=id;
+  document.getElementById('modal-fondo-title').textContent='Editar Fondo';
+  document.getElementById('fondo-nombre-input').value=f.nombre;
+  document.getElementById('fondo-nombre-hint').style.display='none';
+  document.getElementById('fondo-desc').value=f.descripcion||'';
+  document.getElementById('fondo-color').value=f.color||'0';
+  document.getElementById('fondo-mep-row').style.display='';
+  document.getElementById('fondo-mep-inicio').value=f.mep_inicio_manual?fmt(f.mep_inicio_manual,2):'';
+  openModal('modal-fondo');
+}
+
+function saveFondo(){
+  if(editingFondoId){
+    const f=db.fondos.find(f=>f.id===editingFondoId);
+    if(f){
+      const nuevoNombre=document.getElementById('fondo-nombre-input').value.trim();
+      if(nuevoNombre) f.nombre=nuevoNombre;
+      f.descripcion=document.getElementById('fondo-desc').value;
+      f.color=document.getElementById('fondo-color').value;
+      const mepVal=parseAR(document.getElementById('fondo-mep-inicio').value);
+      f.mep_inicio_manual=(!isNaN(mepVal)&&mepVal>0)?mepVal:null;
+    }
+    editingFondoId=null;
+    document.getElementById('fondo-nombre-hint').style.display='';
+  } else {
+    // Nombre libre: si vacío, usar la sugerencia del placeholder
+    const inputEl=document.getElementById('fondo-nombre-input');
+    const nombre=(inputEl.value.trim()||inputEl.placeholder||'').trim();
+    if(!nombre){ showToast('Ingresá un nombre para el fondo','warn'); return; }
+    // ID = uid() oculto e inmutable; nombre visible, repetible, editable en cualquier momento
+    db.fondos.push({id:uid(),nombre,descripcion:document.getElementById('fondo-desc').value,color:document.getElementById('fondo-color').value,orden:db.fondos.filter(f=>f.activo!==false).length});
+  }
+  saveDB(); closeModal('modal-fondo'); renderSidebar(); refreshCurrentPage(); showToast('Fondo guardado');
+}
+
+function saveDescInline(fondoId, value){
+  const f=db.fondos.find(f=>f.id===fondoId); if(!f) return;
+  f.descripcion=value.trim(); saveDB(); renderSidebar(); showToast(value.trim()?'Descripción guardada':'Descripción eliminada');
+}
+
+function deleteFondo(id){
+  const f=db.fondos.find(f=>f.id===id); if(!f) return;
+  const n=db.movimientos.filter(m=>m.fondo_id===id).length;
+  if(!confirm(`¿Borrar "${f.nombre}"?\nSe eliminarán ${n} movimiento(s). No se puede deshacer.`)) return;
+  db.fondos=db.fondos.filter(f=>f.id!==id);
+  db.movimientos=db.movimientos.filter(m=>m.fondo_id!==id);
+  db.cierres=db.cierres.filter(c=>c.fondo_id!==id);
+  const activosEnCartera=new Set(db.movimientos.map(m=>m.activo&&m.activo.trim().toUpperCase()).filter(Boolean));
+  Object.keys(db.precios).forEach(k=>{ if(!activosEnCartera.has(k)) delete db.precios[k]; });
+  saveDB(); renderSidebar(); navigate('dashboard'); showToast(`"${f.nombre}" eliminado`);
+}
+
+// ============================================================
+// MODAL: FUSIONAR FONDOS
+// ============================================================
+// ============================================================
+// TRANSFERENCIA INTERNA ENTRE FONDOS
+// ============================================================
+function openTransferencia(){
+  const activos_f=fondosOrdenados();
+  if(activos_f.length<2){ showToast('Necesitás al menos 2 fondos activos','warn'); return; }
+  const opts=activos_f.map(f=>`<option value="${f.id}">${f.nombre}</option>`).join('');
+  document.getElementById('tr-origen').innerHTML=opts;
+  document.getElementById('tr-destino').innerHTML=opts;
+  // Default: destino diferente al origen
+  if(activos_f.length>=2) document.getElementById('tr-destino').value=activos_f[1].id;
+  document.getElementById('tr-fecha').value=new Date().toISOString().split('T')[0];
+  document.getElementById('tr-mep').value=fmtInput(db.config.usd_mep_default);
+  document.getElementById('tr-nota').value='';
+  document.getElementById('tr-cantidad').value='';
+  document.getElementById('tr-cant-disp').textContent='—';
+  document.getElementById('tr-costo').textContent='—'; document.getElementById('tr-ppc-hint').textContent='';
+  document.getElementById('tr-preview').textContent='';
+  onTransfOrigenChange();
+  openModal('modal-transferencia');
+}
+
+function onTransfOrigenChange(){
+  const origenId=document.getElementById('tr-origen').value;
+  const cartera=buildCartera(origenId).filter(p=>!p.es_futuro);
+  const sel=document.getElementById('tr-activo');
+  if(!cartera.length){
+    sel.innerHTML='<option value="">— Sin posiciones spot —</option>';
+    document.getElementById('tr-cant-disp').textContent='—';
+    document.getElementById('tr-costo').textContent='—'; document.getElementById('tr-ppc-hint').textContent='';
+    return;
+  }
+  sel.innerHTML=cartera.map(p=>`<option value="${p.activo}">${p.activo}</option>`).join('');
+  onTransfActivoChange();
+}
+
+function onTransfActivoChange(){
+  const origenId=document.getElementById('tr-origen').value;
+  const activo=document.getElementById('tr-activo').value;
+  document.getElementById('tr-cantidad').value='';
+  document.getElementById('tr-costo').textContent='—'; document.getElementById('tr-ppc-hint').textContent='';
+  document.getElementById('tr-preview').textContent='';
+  if(!activo) return;
+  const cartera=buildCartera(origenId);
+  const pos=cartera.find(p=>p.activo===activo);
+  if(!pos){ document.getElementById('tr-cant-disp').textContent='—'; return; }
+  const cantDisp=pos.instrumento==='renta_fija'?pos.cantidad:pos.cantidad;
+  document.getElementById('tr-cant-disp').textContent=fmt(cantDisp,pos.instrumento==='renta_fija'?2:0);
+  document.getElementById('tr-cantidad').value=fmt(cantDisp,pos.instrumento==='renta_fija'?2:0);
+  onTransfCantChange();
+}
+
+function calcTransfBase(origenId, activo, cant){
+  // Devuelve {ppc_mensual, cim_prop, pos} usando el PPC del mes activo del origen.
+  // El CIM transferido = effQty × PPC_mensual — redistribuye el CIM proporcionalmente.
+  const cartera=buildCartera(origenId);
+  const pos=cartera.find(p=>p.activo===activo);
+  if(!pos||!cant) return {ppc_mensual:null, cim_prop:0, pos:null};
+  const {ppc_mensual: ppc_raw}=getPPCMensual(origenId, activo, pos.instrumento);
+  const ppc=rp(ppc_raw??pos.precio_promedio);   // PPC mensual; fallback a precio histórico
+  const rfFactor=pos.instrumento==='renta_fija'?100:1;
+  const effQty=rp(cant/rfFactor);
+  const cim_prop=rp(effQty*ppc);
+  return {ppc_mensual:ppc, cim_prop, pos};
+}
+
+function onTransfCantChange(){
+  const origenId=document.getElementById('tr-origen').value;
+  const activo=document.getElementById('tr-activo').value;
+  const cant=parseAR(document.getElementById('tr-cantidad').value)||0;
+  if(!activo||!cant){ document.getElementById('tr-costo').textContent='—'; document.getElementById('tr-ppc-hint').textContent=''; document.getElementById('tr-preview').textContent=''; return; }
+  const {ppc_mensual, cim_prop, pos}=calcTransfBase(origenId, activo, cant);
+  if(!pos) return;
+  document.getElementById('tr-costo').textContent=fmtARS(cim_prop);
+  document.getElementById('tr-ppc-hint').textContent=`PPC mes: ${fmt(ppc_mensual,2)}`;
+  const destinoId=document.getElementById('tr-destino').value;
+  const destino=db.fondos.find(f=>f.id===destinoId);
+  const origen=db.fondos.find(f=>f.id===origenId);
+  if(origen&&destino&&origenId!==destinoId){
+    document.getElementById('tr-preview').innerHTML=
+      `<span style="color:var(--text3)">Moverá <strong style="color:var(--text)">${fmt(cant,pos.instrumento==='renta_fija'?2:0)} ${activo}</strong> de <strong style="color:var(--accent)">${origen.nombre}</strong> a <strong style="color:var(--accent)">${destino.nombre}</strong>. CIM transferido: <strong style="color:var(--yellow)">${fmtARS(cim_prop)}</strong>. Resultado de cada fondo queda neutro.</span>`;
+  }
+}
+
+function ejecutarTransferencia(){
+  const origenId=document.getElementById('tr-origen').value;
+  const destinoId=document.getElementById('tr-destino').value;
+  const activo=document.getElementById('tr-activo').value.trim().toUpperCase();
+  const cant=parseAR(document.getElementById('tr-cantidad').value)||0;
+  const fecha=document.getElementById('tr-fecha').value;
+  const mep=parseAR(document.getElementById('tr-mep').value)||db.config.usd_mep_default;
+  const nota=document.getElementById('tr-nota').value.trim();
+
+  if(origenId===destinoId){ showToast('Origen y destino deben ser distintos','warn'); return; }
+  if(!activo||!cant||!fecha){ showToast('Completá todos los campos','warn'); return; }
+
+  const cartera=buildCartera(origenId);
+  const pos=cartera.find(p=>p.activo===activo);
+  if(!pos){ showToast('Posición no encontrada en origen','warn'); return; }
+  if(cant>pos.cantidad+0.0001){ showToast(`Cantidad supera el disponible (${fmt(pos.cantidad,2)})`, 'warn'); return; }
+
+  // Usar PPC mensual del origen como base del CIM transferido.
+  // Esto redistribuye el Capital Inicial del Mes proporcionalmente entre fondos,
+  // evitando resultados artificialmente negativos en origen o positivos en destino.
+  const {ppc_mensual, cim_prop}=calcTransfBase(origenId, activo, cant);
+  const precio_base=rp(ppc_mensual??pos.precio_promedio);
+  const cim_transferido=cim_prop;  // = effQty * PPC_mensual
+
+  const fd=new Date(fecha+'T00:00:00');
+  const periodo_mes=fd.getMonth()+1;
+  const periodo_anio=fd.getFullYear();
+  const transfer_id=uid();
+
+  // transfer_out: sale del fondo origen al PPC mensual
+  // → reduce CIM del origen en la proporción transferida → resultado origen neutro
+  db.movimientos.push({
+    id:uid(), transfer_id,
+    fondo_id:origenId,
+    fecha, periodo_mes, periodo_anio,
+    instrumento:pos.instrumento,
+    tipo:'transfer_out',
+    activo,
+    cantidad:cant,
+    precio_ars:precio_base,      // PPC mensual del origen
+    importe_ars:cim_transferido, // CIM proporcional
+    usd_mep:mep,
+    comision:0, impuestos:0,
+    obs:nota||`Transferencia a ${db.fondos.find(f=>f.id===destinoId)?.nombre||destinoId}`,
+    aporte_capital:false,
+    origen:'transferencia'
+  });
+
+  // transfer_in: entra al fondo destino con el mismo PPC mensual
+  // → CIM del destino = mismo precio base → resultado destino neutro al arranque
+  db.movimientos.push({
+    id:uid(), transfer_id,
+    fondo_id:destinoId,
+    fecha, periodo_mes, periodo_anio,
+    instrumento:pos.instrumento,
+    tipo:'transfer_in',
+    activo,
+    cantidad:cant,
+    precio_ars:precio_base,      // mismo PPC mensual
+    importe_ars:cim_transferido, // mismo CIM proporcional
+    usd_mep:mep,
+    comision:0, impuestos:0,
+    obs:nota||`Transferencia desde ${db.fondos.find(f=>f.id===origenId)?.nombre||origenId}`,
+    aporte_capital:false,
+    origen:'transferencia'
+  });
+
+  saveDB();
+  closeModal('modal-transferencia');
+  showToast(`${fmt(cant,pos.instrumento==='renta_fija'?2:0)} ${activo} transferido · ${fmtARS(cim_transferido)}`);
+  refreshCurrentPage();
+}
+
+// ============================================================
+// CAPITAL BASE MANUAL
+// ============================================================
+function openCapitalBaseModal(fondoId){
+  const k=`${fondoId}_${db.periodo.anio}_${db.periodo.mes}`;
+  const override=db.config.capital_base_manual?.[k];
+  const d=buildFromMovimientos(fondoId);
+  const dolarSugerido=override?.dolar_base ?? d.mep_inicio ?? db.config.usd_mep_default ?? 1399;
+  document.getElementById('cb-fondo-id').textContent=fondoId;
+  document.getElementById('cb-ars').value=fmtInput(override?override.ars:d.capital_base_ars);
+  document.getElementById('cb-dolar').value=fmtInput(dolarSugerido,2);
+  document.getElementById('cb-usd').value=fmtInput(override?override.usd:d.capital_base_usd,2);
+  openModal('modal-capital-base');
+}
+function cbSyncFromARS(){
+  const ars=parseAR(document.getElementById('cb-ars').value)||0;
+  const dolar=parseAR(document.getElementById('cb-dolar').value)||0;
+  if(ars>0&&dolar>0) document.getElementById('cb-usd').value=fmt(r2(ars/dolar),2);
+}
+function cbSyncFromUSD(){
+  const usd=parseAR(document.getElementById('cb-usd').value)||0;
+  const dolar=parseAR(document.getElementById('cb-dolar').value)||0;
+  if(usd>0&&dolar>0) document.getElementById('cb-ars').value=fmt(r2(usd*dolar),2);
+}
+function cbSyncFromDolar(){
+  const ars=parseAR(document.getElementById('cb-ars').value)||0;
+  const dolar=parseAR(document.getElementById('cb-dolar').value)||0;
+  if(ars>0&&dolar>0) document.getElementById('cb-usd').value=fmt(r2(ars/dolar),2);
+}
+function guardarCapitalBase(){
+  const fondoId=document.getElementById('cb-fondo-id').textContent;
+  const ars=parseAR(document.getElementById('cb-ars').value)||0;
+  const usd=parseAR(document.getElementById('cb-usd').value)||0;
+  const dolar=parseAR(document.getElementById('cb-dolar').value)||0;
+  if(!fondoId){ showToast('Error: fondo no identificado','warn'); return; }
+  if(dolar<=0){ showToast('El Dólar Base debe ser mayor a 0','warn'); return; }
+  if(!db.config.capital_base_manual) db.config.capital_base_manual={};
+  const k=`${fondoId}_${db.periodo.anio}_${db.periodo.mes}`;
+  db.config.capital_base_manual[k]={ars, usd:usd||r2(ars/dolar), dolar_base:dolar};
+  saveDB(); closeModal('modal-capital-base');
+  showToast('Capital Base guardado');
+  refreshCurrentPage();
+}
+function borrarCapitalBase(){
+  const fondoId=document.getElementById('cb-fondo-id').textContent;
+  if(!fondoId) return;
+  const k=`${fondoId}_${db.periodo.anio}_${db.periodo.mes}`;
+  if(db.config.capital_base_manual) delete db.config.capital_base_manual[k];
+  saveDB(); closeModal('modal-capital-base');
+  showToast('Override eliminado');
+  refreshCurrentPage();
+}
+
+// ============================================================
+// MODAL: CIERRE MENSUAL
+// ============================================================
+function buildCierrePreview(){
+  let html=`<div class="table-scroll"><table><thead><tr><th>Fondo</th><th>Patrimonio $</th><th>Resultado $</th><th>TEM</th></tr></thead><tbody>`;
+  fondosOrdenados().forEach(f=>{
+    const d=buildFromMovimientos(f.id);
+    const pat=r2(d.patrimonio);
+    const res=r2(d.resultado_mensual_ars);
+    const tem=d.capital_invertido>0?r2(res/d.capital_invertido*100):0;
+    html+=`<tr><td class="td-main">${f.nombre}</td><td>${fmtARS(pat)}</td><td class="${colorClass(res)}">${fmtARS(res)}</td><td class="${colorClass(tem)}">${fmtPct(tem)}</td></tr>`;
+  });
+  html+=`</tbody></table></div>`;
+  document.getElementById('cierre-preview').innerHTML=html;
+  document.getElementById('cierre-usd-mep').value=fmtInput(db.config.usd_mep_default);
+  document.getElementById('cierre-inflacion').value='';
+}
+
+function makeSnap(overrides){
+  return{version_schema:1,id:uid(),fondo_id:null,tipo_snapshot:null,mes:null,anio:null,patrimonio_ars:0,liquidez_ars:0,capital_invertido_ars:0,aportes:0,retiros:0,resultado_ars:0,tem_ars:0,patrimonio_usd:0,capital_invertido_usd:0,resultado_usd_real:0,resultado_usd_mep:0,tem_usd:0,usd_mep_cierre:0,fecha_cierre:'',...overrides};
+}
+
+function ejecutarCierre(){
+  const usdMep=parseAR(document.getElementById('cierre-usd-mep').value)||db.config.usd_mep_default;
+  const inflacionVal=parseAR(document.getElementById('cierre-inflacion').value);
+  const p=db.periodo;
+  const fechaCierre=new Date().toISOString().split('T')[0];
+  if(!isNaN(inflacionVal)&&inflacionVal>0){
+    if(!db.config.inflacion_mensual) db.config.inflacion_mensual={};
+    db.config.inflacion_mensual[`${p.anio}-${String(p.mes).padStart(2,'0')}`]=inflacionVal;
+  }
+
+  // Acumuladores consolidado — r2 en cada paso, suma final también r2
+  let cons_pat_ars=0, cons_liq=0, cons_cap=0, cons_aportes=0, cons_retiros=0;
+  let cons_res_ars=0, cons_pat_usd=0, cons_cap_usd=0, cons_res_usd=0;
+
+  fondosOrdenados().forEach(f=>{
+    const d=buildFromMovimientos(f.id);
+    // Guardar con rp() = 3 decimales (precisión interna).
+    // Los valores de resultado ya vienen de totARS.resultado / totUSD.resultado (r2 de filas),
+    // así que el snapshot refleja exactamente lo visible en pantalla.
+    const pat_ars     = rp(d.patrimonio);           // Capital Actual $ — 3 dec
+    const liq_ars     = rp(d.liquidez)<0.005?0:rp(d.liquidez); // liquidez residual < $0,005 → cero
+    const cap_ars     = rp(d.capital_invertido);
+    const aportes_ars = rp(d.aportes);
+    const retiros_ars = rp(d.retiros);
+    const res_ars     = d.resultado_mensual_ars;    // ya es r2 (fila visible) — se guarda igual
+    const pat_usd     = rp(d.ca_usd_tot);          // Capital Actual U$S — 3 dec
+    const cap_usd     = rp(d.capital_invertido_usd);
+    const res_usd     = d.resultado_mensual_usd;    // ya es r2 (fila visible) — se guarda igual
+    const tem_ars     = cap_ars>0?rp(res_ars/cap_ars*100):0;
+    const tem_usd     = cap_usd>0?rp(res_usd/cap_usd*100):0;
+
+    const precios_cierre={};
+    d.cartera.forEach(pos=>{ const pa=getPrecioActual(pos.activo); if(pa!=null) precios_cierre[pos.activo]=r2(pa); });
+
+    const snap=makeSnap({
+      fondo_id:f.id, tipo_snapshot:'fondo', mes:p.mes, anio:p.anio,
+      patrimonio_ars:pat_ars, liquidez_ars:liq_ars,
+      capital_invertido_ars:cap_ars, aportes:aportes_ars, retiros:retiros_ars,
+      resultado_ars:res_ars, tem_ars,
+      patrimonio_usd:pat_usd, capital_invertido_usd:cap_usd,
+      resultado_usd_real:0, resultado_usd_mep:res_usd, tem_usd,
+      patrimonio_cierre_ars:pat_ars, patrimonio_cierre_usd:pat_usd,
+      // Guardar MEP inicio y actual para reconstrucción histórica
+      usd_mep_inicio:d.mep_inicio, usd_mep_cierre:usdMep,
+      fecha_cierre:fechaCierre, precios_cierre
+    });
+    db.cierres.push(snap);
+
+    // Acumular en consolidado — rp() para mantener 3 decimales
+    cons_pat_ars  =rp(cons_pat_ars  +pat_ars);
+    cons_liq      =rp(cons_liq      +liq_ars);
+    cons_cap      =rp(cons_cap      +cap_ars);
+    cons_aportes  =rp(cons_aportes  +aportes_ars);
+    cons_retiros  =rp(cons_retiros  +retiros_ars);
+    cons_res_ars  =rp(cons_res_ars  +res_ars);
+    cons_pat_usd  =rp(cons_pat_usd  +pat_usd);
+    cons_cap_usd  =rp(cons_cap_usd  +cap_usd);
+    cons_res_usd  =rp(cons_res_usd  +res_usd);
+  });
+
+  const snapCons=makeSnap({
+    fondo_id:'_consolidado', tipo_snapshot:'consolidado', mes:p.mes, anio:p.anio,
+    patrimonio_ars:cons_pat_ars, liquidez_ars:cons_liq,
+    capital_invertido_ars:cons_cap, aportes:cons_aportes, retiros:cons_retiros,
+    resultado_ars:cons_res_ars,
+    patrimonio_usd:cons_pat_usd, capital_invertido_usd:cons_cap_usd,
+    resultado_usd_mep:cons_res_usd,
+    usd_mep_cierre:usdMep, fecha_cierre:fechaCierre
+  });
+  db.cierres.push(snapCons);
+
+  let nm=p.mes+1, na=p.anio; if(nm>12){ nm=1; na++; }
+  db.periodo={mes:nm,anio:na};
+  saveDB(); closeModal('modal-cierre'); showToast(`Cierre ${periodoLabel(p)} ejecutado`); renderSidebar(); navigate('cierres');
+}
+
+// ============================================================
+// PRECIOS CIERRE (modal)
+// ============================================================
+function openPreciosCierre(){
+  const periodos=[...new Set(db.cierres.filter(c=>isCierreVisible(c)&&c.tipo_snapshot==='fondo').map(c=>`${c.anio}-${String(c.mes).padStart(2,'0')}`)
+  )].sort().reverse();
+  const sel=document.getElementById('pc-periodo');
+  sel.innerHTML=periodos.map(k=>{ const[a,m]=k.split('-'); return`<option value="${k}">${periodoLabel({mes:parseInt(m),anio:parseInt(a)})}</option>`; }).join('');
+  renderPreciosCierreEditor();
+  openModal('modal-precios-cierre');
+}
+
+function renderPreciosCierreEditor(){
+  const k=document.getElementById('pc-periodo').value;
+  if(!k){ document.getElementById('pc-editor').innerHTML=''; return; }
+  const[anio,mes]=k.split('-').map(Number);
+  const snaps=db.cierres.filter(c=>isCierreVisible(c)&&c.tipo_snapshot==='fondo'&&c.mes===mes&&c.anio===anio);
+  const merged={}; snaps.forEach(s=>{ if(s.precios_cierre) Object.assign(merged,s.precios_cierre); });
+  const activos=Object.keys(merged).sort();
+  if(!activos.length){ document.getElementById('pc-editor').innerHTML=`<div style="color:var(--text3);font-size:12px">Sin precios de cierre para este período.</div>`; return; }
+  const rows=activos.map(a=>`<tr>
+    <td style="padding:5px 8px;font-size:13px;font-weight:600">${a}</td>
+    <td style="padding:5px 8px"><input type="text" inputmode="decimal" value="${fmt(merged[a],2)}" onblur="reformatInput(this)" id="pcv-${a.replace('/','_')}" style="width:110px;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;padding:4px 8px;color:var(--text);font-size:13px;text-align:right"></td>
+    <td style="padding:5px 8px">
+      <button class="btn btn-primary btn-sm" onclick="guardarPrecioCierre('${k}','${a}')">✓</button>
+      <button class="btn btn-secondary btn-sm" style="margin-left:4px" onclick="borrarPrecioCierre('${k}','${a}')">✕</button>
+    </td>
+  </tr>`).join('');
+  document.getElementById('pc-editor').innerHTML=`<table style="width:100%"><tbody>${rows}</tbody></table>`;
+}
+
+function agregarPrecioCierre(){
+  const k=document.getElementById('pc-periodo').value; if(!k) return;
+  const activo=document.getElementById('pc-activo').value.trim().toUpperCase();
+  const val=parseAR(document.getElementById('pc-precio').value);
+  if(!activo||isNaN(val)||val<=0){ showToast('Activo o precio inválido','warn'); return; }
+  const[anio,mes]=k.split('-').map(Number);
+  db.cierres.filter(c=>c.tipo_snapshot==='fondo'&&c.mes===mes&&c.anio===anio).forEach(c=>{ if(!c.precios_cierre) c.precios_cierre={}; c.precios_cierre[activo]=r2(val); });
+  saveDB(); document.getElementById('pc-activo').value=''; document.getElementById('pc-precio').value='';
+  renderPreciosCierreEditor(); showToast(`Precio ${activo} guardado`);
+}
+
+function guardarPrecioCierre(periodoKey, activo){
+  const safeId=activo.replace('/','_');
+  const input=document.getElementById('pcv-'+safeId); if(!input) return;
+  const val=parseAR(input.value);
+  if(isNaN(val)||val<=0){ showToast('Valor inválido','warn'); return; }
+  const[anio,mes]=periodoKey.split('-').map(Number);
+  db.cierres.filter(c=>c.tipo_snapshot==='fondo'&&c.mes===mes&&c.anio===anio).forEach(c=>{ if(!c.precios_cierre) c.precios_cierre={}; c.precios_cierre[activo]=r2(val); });
+  saveDB(); showToast(`Precio ${activo} guardado`);
+}
+
+function borrarPrecioCierre(periodoKey, activo){
+  if(!confirm(`¿Eliminar precio de cierre de ${activo}?`)) return;
+  const[anio,mes]=periodoKey.split('-').map(Number);
+  db.cierres.filter(c=>c.tipo_snapshot==='fondo'&&c.mes===mes&&c.anio===anio).forEach(c=>{ if(c.precios_cierre) delete c.precios_cierre[activo]; });
+  saveDB(); renderPreciosCierreEditor(); showToast(`Precio ${activo} eliminado`);
+}
+
+// ============================================================
+// INFLACIÓN
+// ============================================================
+function openInflacion(){ renderInflacionTabla(); openModal('modal-inflacion'); }
+function renderInflacionTabla(){
+  const el=document.getElementById('inflacion-tabla');
+  const inf=db.config.inflacion_mensual||{};
+  const keys=Object.keys(inf).sort().reverse();
+  if(!keys.length){ el.innerHTML=`<div style="color:var(--text3);font-size:12px">Sin inflación cargada.</div>`; return; }
+  const rows=keys.map(k=>`<tr>
+    <td style="padding:4px 8px">${k}</td>
+    <td style="padding:4px 8px;text-align:right"><input type="text" inputmode="decimal" id="inf-edit-${k}" value="${fmt(inf[k],2)}" onblur="reformatInput(this)" style="width:80px;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;padding:3px 7px;color:var(--text);font-size:12px;text-align:right"></td>
+    <td style="padding:4px 8px"><button class="btn btn-primary btn-sm" onclick="actualizarInflacion('${k}')">✓</button></td>
+    <td style="padding:4px 8px"><button class="btn btn-secondary btn-sm" onclick="borrarInflacion('${k}')">✕</button></td>
+  </tr>`).join('');
+  el.innerHTML=`<table style="width:100%;border-collapse:collapse"><thead><tr style="font-size:11px;color:var(--text3)"><th style="padding:4px 8px;text-align:left">Período</th><th style="padding:4px 8px;text-align:right">Inflación</th><th></th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+function guardarInflacion(){
+  const mes=document.getElementById('inf-mes').value;
+  const val=parseAR(document.getElementById('inf-valor').value);
+  if(!mes){ showToast('Seleccioná un período','warn'); return; }
+  if(isNaN(val)||val<=0){ showToast('Ingresá un valor válido','warn'); return; }
+  if(!db.config.inflacion_mensual) db.config.inflacion_mensual={};
+  db.config.inflacion_mensual[mes]=r2(val);
+  saveDB(); document.getElementById('inf-valor').value=''; renderInflacionTabla(); renderCierres(); showToast(`Inflación ${mes}: ${fmt(val,2)}% guardada`);
+}
+function actualizarInflacion(key){
+  const input=document.getElementById('inf-edit-'+key); if(!input) return;
+  const val=parseAR(input.value);
+  if(isNaN(val)||val<=0){ showToast('Valor inválido','warn'); return; }
+  db.config.inflacion_mensual[key]=r2(val); saveDB(); renderInflacionTabla(); renderCierres(); showToast(`Inflación ${key} actualizada`);
+}
+function borrarInflacion(key){
+  if(!confirm(`¿Eliminar inflación de ${key}?`)) return;
+  delete db.config.inflacion_mensual[key]; saveDB(); renderInflacionTabla(); renderCierres(); showToast(`Inflación ${key} eliminada`);
+}
+
+// ============================================================
+// CONFIG USD MEP
+// ============================================================
+function openConfigUSD(){
+  const val=prompt('Cotización USD MEP (ej: 1.399,00):',fmt(db.config.usd_mep_default||1399,2));
+  if(val){ const n=parseAR(val); if(!isNaN(n)&&n>0){ db.config.usd_mep_default=n; saveDB(); refreshCurrentPage(); showToast('USD MEP actualizado'); }}
+}
+
+// ============================================================
+// EXPORT / IMPORT
+// ============================================================
+function exportData(){
+  const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download=`fondos_backup_${new Date().toISOString().split('T')[0]}.json`; a.click(); URL.revokeObjectURL(url);
+  showToast('Datos exportados');
+}
+
+function importData(e){
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{
+      const imp=JSON.parse(ev.target.result);
+      if(imp.tipo==='precios'&&imp.precios){
+        let count=0;
+        imp.precios.forEach(p=>{ if(p.activo&&p.precio!=null){ db.precios[p.activo.toUpperCase()]={precio:p.precio,instrumento:p.instrumento||'otro',fecha:imp.fecha||new Date().toISOString().split('T')[0],periodo_mes:db.periodo.mes,periodo_anio:db.periodo.anio,origen_precio:'json'}; count++; }});
+        if(imp.usd_mep) db.config.usd_mep_default=imp.usd_mep;
+        saveDB(); refreshCurrentPage(); showToast(count+' precio(s) importado(s)');
+      } else if(imp.fondos&&imp.movimientos){
+        if(!confirm(`¿Importar backup? Fondos: ${imp.fondos.length}, Movimientos: ${imp.movimientos.length}`)) return;
+        db=imp;
+        // Normalizar config faltante
+        if(!db.config) db.config={usd_mep_default:1399,inflacion_mensual:{}};
+        if(!db.config.inflacion_mensual) db.config.inflacion_mensual={};
+        if(!db.cierres) db.cierres=[];
+        if(!db.precios) db.precios={};
+        saveDB(); renderSidebar(); navigate('dashboard'); showToast('Datos importados');
+      } else { throw new Error('Formato no reconocido'); }
+    }catch(e){ showToast('Error: '+e.message,'warn'); }
+  };
+  r.readAsText(f); e.target.value='';
+}
+
+// ============================================================
+// TOAST & MODALS
+// ============================================================
+function openModal(id){ document.getElementById(id).classList.remove('hidden'); }
+function closeModal(id){ document.getElementById(id).classList.add('hidden'); }
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') document.querySelectorAll('.modal-overlay').forEach(m=>m.classList.add('hidden')); });
+
+function showToast(msg, type='success'){
+  const t=document.createElement('div');
+  t.style.cssText=`position:fixed;bottom:22px;right:22px;background:${type==='warn'?'var(--yellow-bg)':'var(--green-bg)'};border:1px solid ${type==='warn'?'var(--yellow)':'var(--green)'};color:${type==='warn'?'var(--yellow)':'var(--green)'};padding:9px 16px;border-radius:8px;font-family:var(--font-mono);font-size:12px;z-index:9999;transition:opacity .3s`;
+  t.textContent=msg; document.body.appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; setTimeout(()=>t.remove(),300); },2500);
+}
+
+function refreshCurrentPage(){
+  if(currentPage==='dashboard') renderDashboard();
+  else if(currentPage==='movimientos') renderMovimientos();
+  else if(currentPage==='fondo'&&currentFondoId) renderFondoDetail(currentFondoId);
+  else if(currentPage==='cierres') renderCierres();
+  else if(currentPage==='precios-spot') renderPreciosSpot();
+  renderSidebar();
+}
+
+// ============================================================
+// ERROR HANDLER
+// ============================================================
+window.onerror=function(msg,src,line,col,err){
+  const main=document.getElementById('main');
+  if(main){
+    const div=document.createElement('div');
+    div.style='color:red;padding:20px;font-family:monospace;position:fixed;top:0;left:220px;right:0;background:#1a0000;z-index:9999';
+    div.innerHTML='<b>JS Error:</b> '+msg+' (line '+line+')';
+    main.prepend(div);
+  }
+  return false;
+};
+
+// ============================================================
+// INIT
+// ============================================================
+async function initApp(){
+  const cloudDB = await loadDBCloud();
+  if(cloudDB){
+    migrateDB(cloudDB);
+    db = cloudDB;
+  }
+  renderSidebar();
+  navigate('dashboard');
+}
+
+// Auto-login si hay token guardado
+(async()=>{
+  if(AUTH_TOKEN){
+    const r = await fetch(WORKER_URL+'/db',{headers:{Authorization:'Bearer '+AUTH_TOKEN}});
+    if(r.status===200){
+      document.getElementById('login-screen').style.display='none';
+      await initApp();
+    } else {
+      AUTH_TOKEN=null; localStorage.removeItem('fci_token');
+    }
+  }
+})();
+</script>
+</body>
+</html>
+
