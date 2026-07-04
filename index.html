@@ -1668,7 +1668,7 @@ const PRELOADED_DATA = {
 };
 // ── CLOUD CONFIG ──
 const WORKER_URL = 'https://floral-night-f102.pablogaita.workers.dev';
-let AUTH_TOKEN = localStorage.getItem('fci_token') || null;
+let AUTH_TOKEN = sessionStorage.getItem('fci_token') || null;
 
 // LOGIN
 async function doLogin(){
@@ -1685,7 +1685,7 @@ async function doLogin(){
     const d = await r.json();
     if(d.ok){
       AUTH_TOKEN = d.token;
-      localStorage.setItem('fci_token', AUTH_TOKEN);
+      sessionStorage.setItem('fci_token', AUTH_TOKEN);
       document.getElementById('login-screen').style.display='none';
       await initApp();
     } else {
@@ -1721,7 +1721,7 @@ function showSyncBadge(ok){
   if(ok) setTimeout(()=>b.textContent='',3000);
 }
 function showLoginScreen(){
-  AUTH_TOKEN=null; localStorage.removeItem('fci_token');
+  AUTH_TOKEN=null; sessionStorage.removeItem('fci_token');
   document.getElementById('login-screen').style.display='flex';
 }
 
@@ -1739,19 +1739,40 @@ async function fetchPrecioIOL(ticker, mercado='bCBA'){
 
 
 async function actualizarMEP(){
+  showToast('Actualizando MEP...');
   try{
-    showToast('Actualizando MEP...');
-    const r = await fetch(WORKER_URL+'/iol/mep',{headers:{Authorization:'Bearer '+AUTH_TOKEN}});
-    const d = await r.json();
+    const r=await fetch(WORKER_URL+'/iol/mep',{headers:{Authorization:'Bearer '+AUTH_TOKEN}});
+    if(r.status===401){showLoginScreen();return;}
+    const d=await r.json();
     if(d.mep){
-      db.config.usd_mep_default = d.mep;
+      db.config.usd_mep_default=d.mep;
       saveDB();
-      showToast('MEP actualizado: $'+fmt(d.mep,2));
+      showToast('MEP: $'+fmt(d.mep,2));
       refreshCurrentPage();
-    } else {
-      showToast('No se pudo obtener el MEP','warn');
+    }else{
+      showToast('IOL: sin dato MEP ('+(d.error||JSON.stringify(d))+')','warn');
     }
-  }catch(e){ showToast('Error al conectar con IOL','warn'); }
+  }catch(e){showToast('Error IOL: '+e.message,'warn');}
+}
+
+async function sincronizarPreciosIOL(){
+  if(!db.precios) db.precios={};
+  const tickers=Object.keys(db.precios);
+  if(!tickers.length){ showToast('Sin tickers en Precios Spot','warn'); return; }
+  showToast('Sincronizando '+tickers.length+' precios...');
+  let ok=0,err=0;
+  for(const ticker of tickers){
+    try{
+      const r=await fetch(`${WORKER_URL}/iol/precio/${ticker}`,{headers:{Authorization:'Bearer '+AUTH_TOKEN}});
+      const d=await r.json();
+      const p=d.ultimoPrecio??d.cotizacion?.ultimoPrecio??null;
+      if(p){ db.precios[ticker]={precio:p,fecha:new Date().toISOString().split('T')[0],origen:'iol'}; ok++; }
+      else err++;
+    }catch(e){err++;}
+  }
+  saveDB();
+  showToast(`Sync: ${ok} ok, ${err} sin precio`);
+  refreshCurrentPage();
 }
 
 function initDB(){
@@ -3068,6 +3089,7 @@ function renderPreciosSpot(){
   page.innerHTML=`
     <div class="page-header flex-between">
       <div><div class="page-title">Precios Spot</div><div class="page-subtitle">Actualizá los precios para valuar la cartera</div></div>
+      <div class="flex-gap"><button class="btn btn-primary" onclick="sincronizarPreciosIOL()">↻ Sync IOL</button></div>
       <div class="flex-gap">
         <label class="btn btn-secondary btn-sm" style="cursor:pointer">Importar CSV<input type="file" accept=".csv,.txt" style="display:none" onchange="importarPreciosCSV(event)"></label>
         <button class="btn btn-secondary btn-sm" onclick="exportarPlantillaCSV()">Descargar plantilla</button>
@@ -4164,7 +4186,7 @@ async function initApp(){
       document.getElementById('login-screen').style.display='none';
       await initApp();
     } else {
-      AUTH_TOKEN=null; localStorage.removeItem('fci_token');
+      AUTH_TOKEN=null; sessionStorage.removeItem('fci_token');
     }
   }
 })();
