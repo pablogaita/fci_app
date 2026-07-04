@@ -1737,6 +1737,23 @@ async function fetchPrecioIOL(ticker, mercado='bCBA'){
   }catch(e){ return null; }
 }
 
+
+async function actualizarMEP(){
+  try{
+    showToast('Actualizando MEP...');
+    const r = await fetch(WORKER_URL+'/iol/mep',{headers:{Authorization:'Bearer '+AUTH_TOKEN}});
+    const d = await r.json();
+    if(d.mep){
+      db.config.usd_mep_default = d.mep;
+      saveDB();
+      showToast('MEP actualizado: $'+fmt(d.mep,2));
+      refreshCurrentPage();
+    } else {
+      showToast('No se pudo obtener el MEP','warn');
+    }
+  }catch(e){ showToast('Error al conectar con IOL','warn'); }
+}
+
 function initDB(){
   const now=new Date();
   return {periodo:{mes:now.getMonth()+1,anio:now.getFullYear()},fondos:[],movimientos:[],precios:{},cierres:[],config:{usd_mep_default:1413,inflacion_mensual:{}}};
@@ -2623,6 +2640,7 @@ function renderDashboard(){
       <div><div class="page-title">Dashboard</div><div class="page-subtitle">${periodoLabel(db.periodo)} · Consolidado</div></div>
       <div class="flex-gap">
         <button class="btn btn-secondary btn-sm" onclick="openConfigUSD()">USD MEP: ${fmt(usd_mep,2)}</button>
+        <button class="btn btn-secondary btn-sm" onclick="actualizarMEP()" title="Actualizar MEP desde IOL">↻ MEP</button>
         <button class="btn btn-secondary btn-sm" onclick="navigate('precios-spot')">Precios Spot</button>
         <button class="btn btn-primary btn-sm" onclick="openModal('modal-cierre');buildCierrePreview()">Cierre mensual</button>
       </div>
@@ -4153,4 +4171,3 @@ async function initApp(){
 </script>
 </body>
 </html>
-
